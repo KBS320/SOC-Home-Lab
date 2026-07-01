@@ -116,7 +116,7 @@ Each technique has its own writeup in the `/detections` folder with:
 - The SPL query that detected it
 - A screenshot of the Splunk alert firing
 
-→ [Browse all detection writeups](/detections)
+→ [Browse all detection writeups](https://github.com/KBS320/SOC-Home-Lab/tree/main/detections)
 
 ---
 
