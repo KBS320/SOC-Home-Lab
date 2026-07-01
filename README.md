@@ -1,2 +1,140 @@
-# SOC-Home-Lab
-Hands-on SOC detection lab simulating MITRE ATT&amp;CK techniques using Splunk, Sysmon, and Atomic Red Team
+# SOC Detection Lab — 30 MITRE ATT&CK Techniques
+
+A hands-on home lab where I built a full attack-and-detect pipeline from scratch.
+Every technique was simulated using Atomic Red Team and detected in Splunk.
+No guided walkthroughs. No pre-built alerts. Built and broken and fixed by hand.
+
+---
+
+## Why I Built This
+
+I have spent 8 years working with security tools at financial institutions —
+Splunk, CrowdStrike, Cortex XSOAR, Prisma Cloud. I knew the tools.
+What I wanted to prove — to myself and to any future employer — was that
+I could think like an attacker and catch them in logs.
+
+This lab is that proof.
+
+---
+
+## Lab Environment
+
+| Machine | OS | IP | Role |
+|---|---|---|---|
+| SIEM / Attacker | Kali Linux | 192.168.56.101 | Runs Splunk, executes Atomic tests |
+| Target | Windows Server 2019 | 192.168.56.102 | Sysmon + Universal Forwarder |
+
+- Network: VirtualBox Host-Only (192.168.56.0/24)
+- Log pipeline: Sysmon → Universal Forwarder → Splunk on Kali
+- Attack framework: Atomic Red Team (PowerShell)
+- Sysmon config: SwiftOnSecurity
+
+---
+
+## The 30 Techniques — Full Kill Chain
+
+### Phase 1 — Discovery: Learn the Environment (Attacks 1–10)
+*The attacker just got in. First move: figure out where they are.*
+
+| # | What I Simulated | MITRE ID |
+|---|---|---|
+| 1 | Whoami — who am I logged in as? | T1033 |
+| 2 | Systeminfo — what machine is this? | T1082 |
+| 3 | Tasklist — what processes are running? | T1057 |
+| 4 | Ipconfig — what network am I on? | T1016 |
+| 5 | Netstat — who is this machine talking to? | T1049 |
+| 6 | Net user — what accounts exist? | T1087.001 |
+| 7 | Net localgroup — who has admin rights? | T1069.001 |
+| 8 | Net share — what shared folders exist? | T1135 |
+| 9 | Dir/tree — what files are on this machine? | T1083 |
+| 10 | Reg query — what is hiding in the registry? | T1012 |
+
+### Phase 2 — Execution: Run Malicious Code (Attacks 11–12)
+*Time to run something that shouldn't be running.*
+
+| # | What I Simulated | MITRE ID |
+|---|---|---|
+| 11 | PowerShell encoded commands | T1059.001 |
+| 12 | CMD and batch file execution | T1059.003 |
+
+### Phase 3 — Persistence: Stay on the Machine (Attacks 13–15)
+*If the machine reboots, the attacker comes back automatically.*
+
+| # | What I Simulated | MITRE ID |
+|---|---|---|
+| 13 | Scheduled task created at startup | T1053.005 |
+| 14 | Registry run key added for persistence | T1547.001 |
+| 15 | Remote tool downloaded to target | T1105 |
+
+### Phase 4 — Defense Evasion: Hide from Security Tools (Attacks 16–19)
+*Cover the tracks. Make it look like nothing happened.*
+
+| # | What I Simulated | MITRE ID |
+|---|---|---|
+| 16 | Rundll32 used to run malicious code | T1218.011 |
+| 17 | Evidence deleted from disk | T1070.004 |
+| 18 | Command history cleared | T1070.003 |
+| 19 | Registry modified to disable security | T1112 |
+
+### Phase 5 — Discovery 2: Deeper Reconnaissance (Attacks 20–22)
+*The attacker now goes deeper — looking for timing, visuals, clipboard data.*
+
+| # | What I Simulated | MITRE ID |
+|---|---|---|
+| 20 | System time queried | T1124 |
+| 21 | Screenshot taken of active desktop | T1113 |
+| 22 | Clipboard contents stolen | T1115 |
+
+### Phase 6 — Collection: Package the Data (Attacks 23–24)
+*Gather everything worth stealing and prepare it for exfiltration.*
+
+| # | What I Simulated | MITRE ID |
+|---|---|---|
+| 23 | Files archived into a zip | T1560.001 |
+| 24 | Data exfiltrated over C2 channel | T1041 |
+
+### Phase 7 — Impact: Damage and Destroy (Attacks 25–30)
+*The final stage. Ransomware, cleanup, and exit.*
+
+| # | What I Simulated | MITRE ID |
+|---|---|---|
+| 25 | Files encrypted — ransomware simulation | T1486 |
+| 26 | Password policy dumped | T1201 |
+| 27 | Security software identified | T1518.001 |
+| 28 | USB and peripheral devices enumerated | T1120 |
+| 29 | BITS job used for silent background download | T1197 |
+| 30 | System shutdown to destroy evidence | T1529 |
+
+---
+
+## Detection Writeups
+
+Each technique has its own writeup in the `/detections` folder with:
+- What the attack does and why attackers use it
+- The exact Atomic Red Team command used
+- The raw Splunk event captured
+- The SPL query that detected it
+- A screenshot of the Splunk alert firing
+
+→ [Browse all detection writeups](/detections)
+
+---
+
+## Tools and Stack
+
+- **Splunk** — SIEM, log ingestion, search and alerting
+- **Sysmon** — Deep Windows event logging (SwiftOnSecurity config)
+- **Atomic Red Team** — Open-source attack simulation mapped to MITRE ATT&CK
+- **VirtualBox** — Virtualization
+- **PowerShell** — Attack execution on Windows target
+
+---
+
+## Background
+
+8+ years working hands-on with security tools across financial institutions
+including TD Bank and Fiserv. Proficient in Splunk, CrowdStrike, Cortex XSOAR,
+and Prisma Cloud. Security+ certified.
+
+This lab was built to go beyond tool familiarity — to develop real detection
+instincts by thinking through each attack before writing a single SPL query.
