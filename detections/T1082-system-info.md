@@ -34,4 +34,6 @@ Alert fired within seconds of the command running on the target.
 
 ## Screenshot
 
-[Splunk alert screenshot — to be added]
+<img width="1913" height="932" alt="T1082-splunk png" src="https://github.com/user-attachments/assets/3b4bdf62-b4a0-407d-ad33-57ae8380c305" />
+<img width="1007" height="82" alt="T1082-windows png" src="https://github.com/user-attachments/assets/47cb0179-4162-4178-b2d5-40d4b8fd7695" />
+
