@@ -35,6 +35,5 @@ Alert fired within seconds of the command running on the target.
 
 ## Screenshot
 
-<img width="1917" height="1005" alt="T1083-splunk" src="https://github.com/user-attachments/assets/3d063238-2ae8-4227-beac-902eb5c55425" />
 <img width="997" height="160" alt="T1083-windows" src="https://github.com/user-attachments/assets/c4268dc5-26e1-451e-a459-7a0e3800b572" />
-
+<img width="1917" height="1005" alt="T1083-splunk" src="https://github.com/user-attachments/assets/3d063238-2ae8-4227-beac-902eb5c55425" />
