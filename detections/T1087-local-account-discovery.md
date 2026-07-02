@@ -12,7 +12,7 @@ admin account they can compromise is a major win for the attacker.
 Tool: Atomic Red Team
 Command executed on Windows Server target:
 
-Invoke-AtomicTest T1087.001 -TestNumbers 1
+Invoke-AtomicTest T1087.001 -TestNumbers 8
 
 ## What Splunk Captured
 
