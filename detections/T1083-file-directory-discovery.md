@@ -13,7 +13,7 @@ on the data sitting on the compromised machine.
 Tool: Atomic Red Team
 Command executed on Windows Server target:
 
-Invoke-AtomicTest T1083 -TestNumbers 1
+Invoke-AtomicTest T1083 -TestNumbers 2
 
 ## What Splunk Captured
 
@@ -35,4 +35,6 @@ Alert fired within seconds of the command running on the target.
 
 ## Screenshot
 
-[Splunk alert screenshot — to be added]
+<img width="1917" height="1005" alt="T1083-splunk" src="https://github.com/user-attachments/assets/3d063238-2ae8-4227-beac-902eb5c55425" />
+<img width="997" height="160" alt="T1083-windows" src="https://github.com/user-attachments/assets/c4268dc5-26e1-451e-a459-7a0e3800b572" />
+
