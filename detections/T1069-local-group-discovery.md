@@ -12,7 +12,7 @@ are worth targeting to gain elevated privileges on the system.
 Tool: Atomic Red Team
 Command executed on Windows Server target:
 
-Invoke-AtomicTest T1069.001 -TestNumbers 1
+Invoke-AtomicTest T1069.001 -TestNumbers 2
 
 ## What Splunk Captured
 
