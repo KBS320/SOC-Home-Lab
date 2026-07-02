@@ -35,7 +35,7 @@ Alert fired within seconds of the command running on the target.
 
 ## Screenshot
 
-<img width="1007" height="313" alt="T1057-windows png" src="https://github.com/user-attachments/assets/f0c57f68-30c9-4dfb-ae10-2920b08c9688" />
-<img width="1917" height="932" alt="T1057-splunk" src="https://github.com/user-attachments/assets/6dfaffec-4ecb-4e23-8818-531738be8b70" />
+<img width="997" height="655" alt="T1057-windows png" src="https://github.com/user-attachments/assets/f0bf328a-8141-4a8c-a29b-64e7b979d1ac" />
+<img width="1912" height="1007" alt="T1057-splunk" src="https://github.com/user-attachments/assets/ccbb24a4-85df-4228-962a-51602d2672ba" />
 
 
