@@ -36,6 +36,7 @@ The alert fired within seconds of the command running on the target machine.
 
 ## Screenshot
 
-<img width="1008" height="42" alt="T1033-windows png" src="https://github.com/user-attachments/assets/57770ad1-9ecb-4e85-93d2-9f817496ff89" />
-<img width="1915" height="936" alt="T1033-splunk png" src="https://github.com/user-attachments/assets/f8923832-6046-45e8-b1a6-a02aa747c979" />
+<img width="982" height="463" alt="T1033-windows png" src="https://github.com/user-attachments/assets/205f9119-a52d-4f60-a2ed-e1eda45d745c" />
+<img width="1913" height="972" alt="T1033-splunk png" src="https://github.com/user-attachments/assets/0b0f602a-55d9-43f0-ac01-9a0bc6efe168" />
+
 
