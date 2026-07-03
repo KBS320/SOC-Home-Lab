@@ -10,29 +10,40 @@ PowerShell is built into every Windows machine.
 
 ## How I Simulated It
 
-Tool: Atomic Red Team
-Command executed on Windows Server target:
+Tool: Manual PowerShell execution
+Note: Atomic Red Team Test 1 (Mimikatz) was blocked by Windows Defender.
+Instead, a manual Base64 encoded PowerShell command was executed directly
+to demonstrate the T1059.001 technique.
 
-Invoke-AtomicTest T1059.001 -TestNumbers 1
+Command executed on Windows target:
+
+powershell -e aQBwAGMAbwBuAGYAZwA=
+
+This decodes and executes ipconfig using the -EncodedCommand flag,
+demonstrating how attackers hide commands in Base64 to evade detection.
 
 ## What Splunk Captured
 
 Sysmon Event ID 1 (Process Creation) fired showing:
 - Image: C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
-- User: WINDOWS-SERVER\Administrator
-- CommandLine: powershell.exe -EncodedCommand <base64string>
+- User: WINDOWS\khaled
+- CommandLine: powershell -e aQBwAGMAbwBuAGYAZwA=
 
 ## SPL Detection Query
 
-index=* source="WinEventLog:Microsoft-Windows-Sysmon/Operational"
-EventCode=1 Image="*powershell.exe" CommandLine="*-EncodedCommand*" OR CommandLine="*-enc*"
-| table _time, ComputerName, User, CommandLine, ParentImage
+index=* sourcetype="XmlWinEventLog:Microsoft-Windows-Sysmon/Operational" "powershell" "-e"
+| rex field=_raw "Name='Image'>(?P<Image>[^<]+)"
+| rex field=_raw "Name='CommandLine'>(?P<CommandLine>[^<]+)"
+| rex field=_raw "Name='ParentImage'>(?P<ParentImage>[^<]+)"
+| rex field=_raw "Name='User'>(?P<User>[^<]+)"
+| rex field=_raw "Name='UtcTime'>(?P<UtcTime>[^<]+)"
+| table UtcTime, User, Image, CommandLine, ParentImage
 
 ## Result
 
 Splunk successfully detected encoded PowerShell execution.
 Alert fired within seconds of the command running on the target.
 
-## Screenshot
-
-[Splunk alert screenshot — to be added]
+## Screenshots
+<img width="1002" height="36" alt="T1059-001-windows png" src="https://github.com/user-attachments/assets/8c355721-362e-4049-8ac9-c5aa04813d88" />
+<img width="1915" height="1015" alt="T1059-001-splunk png" src="https://github.com/user-attachments/assets/79f947c8-f796-456c-82f7-54b29d87d49a" />
