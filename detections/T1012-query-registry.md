@@ -1,6 +1,6 @@
 # T1012 — Query Registry (reg query)
 
-**Tactic:** Discovery  **Technique:** T1012  **Log Source:** Sysmon Event ID 1 (Process Creation)
+**Tactic:** Discovery  **Technique:** T1012  **Log Source:** Sysmon (XmlWinEventLog) — Process Creation
 
 ## What This Attack Does
 
@@ -22,7 +22,7 @@ This runs `reg query` against a CurrentVersion key to enumerate registry data.
 
 Sysmon Event ID 1 (Process Creation) fired showing:
 - Image: `C:\Windows\System32\reg.exe`
-- User: `WINDOWS-SERVER\Administrator`
+- User: `WINDOWS\khaled`
 - CommandLine: `reg query HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion`
 
 ## SPL Detection Query
@@ -47,12 +47,12 @@ standalone alert.
 ## False Positives / Tuning
 
 `reg query` runs constantly during normal admin work and software installs. The
-broad `*query*` match returned 22 events in this run, including related
-registry-query activity beyond the Atomic test itself. In production this would
-be tuned to reduce noise — for example, scoping to an unusual ParentImage
-(`powershell.exe` or `cmd.exe` from a non-interactive process), execution
-outside a maintenance window, or `reg query` chained with other discovery
-commands (whoami, systeminfo, net user) from the same parent in a short window.
+broad `"reg.exe" "query"` string match returned 22 events in this run, including
+related registry-query activity beyond the Atomic test itself. In production this
+would be tuned to reduce noise — for example, scoping to an unusual ParentImage
+(`powershell.exe` or `cmd.exe` from a non-interactive process), execution outside
+a maintenance window, or `reg query` chained with other discovery commands
+(whoami, systeminfo, net user) from the same parent in a short window.
 
 ## Result
 
