@@ -1,43 +1,40 @@
-# T1059.001 — PowerShell Encoded Commands
+# T1059.003 — Windows Command Shell (cmd.exe)
 
-**Tactic:** Execution  **Technique:** T1059.001  **Log Source:** Sysmon (XmlWinEventLog) — Process Creation
+**Tactic:** Execution  **Technique:** T1059.003  **Log Source:** Sysmon (XmlWinEventLog) — Process Creation
 
 ## What This Attack Does
 
-The attacker runs PowerShell with a Base64-encoded command (`-EncodedCommand` /
-`-e`) to hide what's actually being executed. Encoding obscures the real command
-from casual log review and simple keyword blocks. It's one of the most common
-techniques used by malware and ransomware in the wild, because PowerShell is
-built into every Windows machine and trusted by the OS.
+The attacker uses `cmd.exe` and batch scripts to run commands on the target. CMD
+is built into every Windows system and trusted by the OS, so attackers use it to
+blend in with normal activity while executing their attack chain — often
+launching a `.bat` payload dropped elsewhere on disk.
 
 ## How I Simulated It
 
-Tool: Manual PowerShell execution
-Note: Atomic Red Team Test 1 (Mimikatz) was blocked by Windows Defender, so a
-manual Base64-encoded PowerShell command was run instead to demonstrate the
-encoding technique cleanly.
+Tool: Atomic Red Team
+Command executed on the Windows 11 target (192.168.56.102):
 
-Command executed on the Windows target (192.168.56.102):
+    Invoke-AtomicTest T1059.003 -TestNumbers 1
 
-    powershell -e aQBwAGMAbwBuAGYAZwA=
-
-Decoded (UTF-16LE Base64), this resolves to `ipconfg` — a benign stand-in
-payload. The point of the demo is the *encoded execution*, not the payload
-itself: an attacker would swap in any command here, and it would look identical
-in the logs.
+Test #1 ("Create and Execute Batch Script") attempts to launch a batch payload
+from the ExternalPayloads folder via `Start-Process`. In this run the payload
+file (`T1059.003_script.bat`) was not staged, so `Start-Process` failed with
+"the system cannot find the file specified." The launch *attempt* was still
+generated and logged — the same forensic trail an attacker leaves when a payload
+is missing, blocked, or already cleaned up.
 
 ## What Splunk Captured
 
-Sysmon Event ID 1 (Process Creation) fired once:
-- Image: `C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe`
+Sysmon Event ID 1 (Process Creation) fired 3 times:
 - User: `WINDOWS\khaled`
-- CommandLine: `powershell.exe -e aQBwAGMAbwBuAGYAZwA=`
-- ParentImage: `powershell.exe`
+- CommandLine (key portion):
+  `powershell.exe & {Start-Process "C:\AtomicRedTeam\atomics\..\ExternalPayloads\T1059.003_script.bat"}`
+- Image / ParentImage: `C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe`
 
 ## SPL Detection Query
 
 ```spl
-index=* sourcetype="XmlWinEventLog:Microsoft-Windows-Sysmon/Operational" "powershell" "-e"
+index=* sourcetype="XmlWinEventLog:Microsoft-Windows-Sysmon/Operational" "T1059"
 | rex field=_raw "Name='Image'>(?P<Image>[^<]+)"
 | rex field=_raw "Name='CommandLine'>(?P<CommandLine>[^<]+)"
 | rex field=_raw "Name='ParentImage'>(?P<ParentImage>[^<]+)"
@@ -48,34 +45,35 @@ index=* sourcetype="XmlWinEventLog:Microsoft-Windows-Sysmon/Operational" "powers
 
 ## Detection Logic
 
-The query keys on `powershell` together with the `-e` flag — the short form of
-`-EncodedCommand`. This is high-value because there's rarely a legitimate reason
-for interactive admins to launch PowerShell with a Base64 blob; encoded execution
-is strongly associated with malware and offensive tooling. The Base64 payload
-itself sits right in the captured CommandLine, so an analyst can decode it
-straight from the log to see what the attacker actually intended to run.
+This search string (`T1059`) matched the test's own payload path for the lab
+demo. In production you wouldn't hunt on the technique ID — you'd key on the real
+behavioral signature: `Start-Process` (or a `cmd.exe` parent) launching a `.bat`
+file from an unusual location such as a temp, Downloads, or a `..`-traversal
+path. The tell here is a script host (`powershell.exe`) spawning a batch payload
+outside normal software directories — legitimate apps rarely run `.bat` files
+that way.
 
 ## False Positives / Tuning
 
-Some legitimate management tools and installers use `-EncodedCommand`, so it's
-not zero-noise. Reduce false positives by matching the flag variants precisely
-(`-e`, `-en`, `-enc`, `-EncodedCommand`), flagging encoded commands from an
-unusual parent (Office apps, `wscript`, `mshta`), and — the high-fidelity move —
-decoding the Base64 at search time and alerting on suspicious decoded content
-(`IEX`, `DownloadString`, `FromBase64String`, `-nop -w hidden`). An encoded
-command that decodes to a download-and-execute is far more actionable than the
-flag alone.
+`cmd.exe` and batch execution are extremely common in normal operations, so a
+broad `cmd.exe /c` match floods the SOC. The higher-fidelity approach: alert on
+batch/script execution from suspicious paths (temp dirs, user profile,
+`ExternalPayloads`, `..` traversal), on a script host launching `.bat`/`.cmd`
+with an unusual parent, or on the failure itself — repeated "file not found"
+launch attempts can indicate a broken or partially-cleaned intrusion. Baseline
+your environment's legitimate batch jobs first so those can be excluded.
 
 ## Result
 
-Splunk detected the encoded PowerShell execution in a single process-creation
-event, capturing the full `-e` command line including the Base64 payload — which
-can be decoded directly from the log to reveal the underlying command.
+Splunk captured the batch-execution attempt across 3 process-creation events even
+though the payload file was missing and `Start-Process` failed. This demonstrates
+that failed or blocked execution attempts still leave a clear, searchable trail
+in process-creation logs — often the first sign that something tried to run.
 
 ## Screenshots
 
-**Attack executed on Windows target (encoded PowerShell command):**
-<img width="1002" alt="T1059.001 encoded PowerShell command executed" src="https://github.com/user-attachments/assets/8c355721-362e-4049-8ac9-c5aa04813d88" />
+**Attack executed on Windows 11 target (batch payload not found, Start-Process fails):**
+<img width="1002" alt="T1059.003 batch script execution attempt on Windows 11" src="https://github.com/user-attachments/assets/bac60d28-5a3d-4935-801a-42af5059bce3" />
 
-**Detection in Splunk — encoded PowerShell captured in one event:**
-<img width="1915" alt="T1059.001 detection in Splunk showing encoded PowerShell" src="https://github.com/user-attachments/assets/79f947c8-f796-456c-82f7-54b29d87d49a" />
+**Detection in Splunk — 3 events from the batch execution attempt:**
+<img width="1912" alt="T1059.003 detection in Splunk showing batch script launch attempt" src="https://github.com/user-attachments/assets/4f719f60-6fe6-4291-bce4-0137f1121d2d" />
