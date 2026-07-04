@@ -12,7 +12,7 @@ launching a `.bat` payload dropped elsewhere on disk.
 ## How I Simulated It
 
 Tool: Atomic Red Team
-Command executed on the Windows Server target (192.168.56.102):
+Command executed on the Windows 11 target (192.168.56.102):
 
     Invoke-AtomicTest T1059.003 -TestNumbers 1
 
@@ -72,8 +72,8 @@ in process-creation logs — often the first sign that something tried to run.
 
 ## Screenshots
 
-**Attack executed on Windows Server target (batch payload not found, Start-Process fails):**
-<img width="1002" alt="T1059.003 batch script execution attempt on Windows Server" src="https://github.com/user-attachments/assets/bac60d28-5a3d-4935-801a-42af5059bce3" />
+**Attack executed on Windows 11 target (batch payload not found, Start-Process fails):**
+<img width="1002" alt="T1059.003 batch script execution attempt on Windows 11" src="https://github.com/user-attachments/assets/bac60d28-5a3d-4935-801a-42af5059bce3" />
 
 **Detection in Splunk — 3 events from the batch execution attempt:**
 <img width="1912" alt="T1059.003 detection in Splunk showing batch script launch attempt" src="https://github.com/user-attachments/assets/4f719f60-6fe6-4291-bce4-0137f1121d2d" />
