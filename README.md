@@ -41,6 +41,8 @@ This lab is that proof.
 
 ## The 30 Techniques — Full Kill Chain
 
+*Techniques are grouped below into a narrative kill-chain for readability. A few techniques' official MITRE tactic differs from the phase they appear in here (e.g. T1105 Ingress Tool Transfer is formally **Command and Control**); each writeup's header lists the accurate MITRE tactic.*
+
 ### Phase 1 — Discovery: Learn the Environment (Attacks 1–10)
 *The attacker just got in. First move: figure out where they are.*
 
@@ -54,7 +56,7 @@ This lab is that proof.
 | 6 | Net user — what accounts exist? | T1087.001 |
 | 7 | Net localgroup — who has admin rights? | T1069.001 |
 | 8 | Net share — what shared folders exist? | T1135 |
-| 9 | Dir/tree — what files are on this machine? | T1083 |
+| 9 | Get-ChildItem — what files are on this machine? | T1083 |
 | 10 | Reg query — what is hiding in the registry? | T1012 |
 
 ### Phase 2 — Execution: Run Malicious Code (Attacks 11–12)
@@ -72,7 +74,7 @@ This lab is that proof.
 |---|---|---|
 | 13 | Scheduled task created at startup | T1053.005 |
 | 14 | Registry run key added for persistence | T1547.001 |
-| 15 | Remote tool downloaded to target | T1105 |
+| 15 | Ingress tool transfer via certutil download | T1105 |
 
 ### Phase 4 — Defense Evasion: Hide from Security Tools (Attacks 16–19)
 *Cover the tracks. Make it look like nothing happened.*
@@ -98,7 +100,7 @@ This lab is that proof.
 
 | # | What I Simulated | MITRE ID |
 |---|---|---|
-| 23 | Files archived into a zip | T1560.001 |
+| 23 | Files archived with makecab (SAM hive staged) | T1560.001 |
 | 24 | Data exfiltrated over C2 channel | T1041 |
 
 ### Phase 7 — Impact: Damage and Destroy (Attacks 25–30)
