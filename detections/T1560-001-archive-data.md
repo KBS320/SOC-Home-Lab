@@ -12,27 +12,40 @@ step before the data leaves the network.
 ## How I Simulated It
 
 Tool: Atomic Red Team
-Command executed on Windows Server target:
+Command executed on Windows Server target: Invoke-AtomicTest T1560.001 -TestNumbers 11
 
-Invoke-AtomicTest T1560.001 -TestNumbers 1
+Note: Test #1 (WinRAR-based) requires WinRAR to be installed, which
+wasn't available in this lab environment due to no internet access on
+the Windows host. Used Test #11 instead, which relies on `makecab.exe` —
+a built-in Windows utility — to achieve the same technique.
 
 ## What Splunk Captured
 
 Sysmon Event ID 1 (Process Creation) fired showing:
-- Image: C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
-- User: WINDOWS-SERVER\Administrator
-- CommandLine: Compress-Archive -Path C:\Users\Administrator\Documents -DestinationPath C:\temp\exfil.zip
+- Image: `C:\Windows\System32\cmd.exe`
+- User: `WINDOWS\khaled`
+- CommandLine: `"cmd.exe" /c makecab.exe C:\Temp\sam.hiv C:\Temp\art.zip`
+- ParentImage: `C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe`
+
+A second event shows `makecab.exe` launching as its own process.
 
 ## SPL Detection Query
 
-index=* source="WinEventLog:Microsoft-Windows-Sysmon/Operational"
-EventCode=1 CommandLine="*Compress-Archive*" OR CommandLine="*-DestinationPath*"
-| table _time, ComputerName, User, CommandLine, ParentImage
+```spl
+index=* sourcetype="XmlWinEventLog:Microsoft-Windows-Sysmon/Operational" "makecab"
+| rex field=_raw "Name='Image'>(?P<Image>[^<]+)"
+| rex field=_raw "Name='CommandLine'>(?P<CommandLine>[^<]+)"
+| rex field=_raw "Name='ParentImage'>(?P<ParentImage>[^<]+)"
+| rex field=_raw "Name='User'>(?P<User>[^<]+)"
+| rex field=_raw "Name='UtcTime'>(?P<UtcTime>[^<]+)"
+| table UtcTime, User, Image, CommandLine, ParentImage
+```
 
 ## Result
 
-Splunk successfully detected archive creation activity.
-Alert fired within seconds of the command running on the target.
+Splunk successfully detected the archive creation activity via
+`makecab.exe`, captured as a child process of `cmd.exe`, itself spawned
+from `powershell.exe`.
 
 ## Screenshot
 
