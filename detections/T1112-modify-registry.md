@@ -35,4 +35,6 @@ Alert fired within seconds of the registry change on the target.
 
 ## Screenshot
 
-[Splunk alert screenshot — to be added]
+<img width="937" height="156" alt="T1112-windows png" src="https://github.com/user-attachments/assets/7f290611-7f24-4812-bffa-0f93274a9151" />
+<img width="1912" height="1027" alt="T1112-splunk" src="https://github.com/user-attachments/assets/c8f5bfa2-7016-44a7-a5a2-844f51b0d90a" />
+
