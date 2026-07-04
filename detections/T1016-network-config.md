@@ -12,7 +12,7 @@ to other machines on the same network.
 ## How I Simulated It
 
 Tool: Atomic Red Team
-Command executed on the Windows Server target (192.168.56.102):
+Command executed on the Windows 11 target (192.168.56.102):
 
     Invoke-AtomicTest T1016 -TestNumbers 1
 
@@ -69,8 +69,8 @@ enumerated network configuration on the target in a single automated sweep.
 
 ## Screenshots
 
-**Attack executed on Windows Server target:**
-<img width="1003" alt="T1016 network discovery test executed on Windows Server" src="https://github.com/user-attachments/assets/e007f51b-54d2-4796-9961-f87ef26b4c30" />
+**Attack executed on Windows 11 target:**
+<img width="1003" alt="T1016 network discovery test executed on Windows 11" src="https://github.com/user-attachments/assets/e007f51b-54d2-4796-9961-f87ef26b4c30" />
 
 **Detection in Splunk — 5 events from one cmd.exe parent:**
 <img width="1912" alt="T1016 detection in Splunk showing 5 chained discovery commands" src="https://github.com/user-attachments/assets/687ba8a9-c471-4f9b-a648-76cbdea9019d" />
