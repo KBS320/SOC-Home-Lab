@@ -13,7 +13,7 @@ landscape after gaining a foothold.
 ## How I Simulated It
 
 Tool: Atomic Red Team
-Command executed on the Windows Server target (192.168.56.102):
+Command executed on the Windows 11 target (192.168.56.102):
 
     Invoke-AtomicTest T1069.001 -TestNumbers 2
 
@@ -71,8 +71,8 @@ the Administrators membership on the target.
 
 ## Screenshots
 
-**Attack executed on Windows Server target (local group enumeration):**
-<img width="997" alt="T1069.001 net localgroup executed on Windows Server" src="https://github.com/user-attachments/assets/af58eae5-3093-468c-bf9e-64afc6de7de3" />
+**Attack executed on Windows 11 target (local group enumeration):**
+<img width="997" alt="T1069.001 net localgroup executed on Windows 11" src="https://github.com/user-attachments/assets/af58eae5-3093-468c-bf9e-64afc6de7de3" />
 
 **Detection in Splunk — 5 events, both localgroup queries:**
 <img width="1912" alt="T1069.001 detection in Splunk showing net localgroup enumeration" src="https://github.com/user-attachments/assets/ad8274da-014f-431e-911b-97991a763e68" />
