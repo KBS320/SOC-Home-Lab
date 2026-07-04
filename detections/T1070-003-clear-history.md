@@ -13,7 +13,7 @@ harder for incident responders to see exactly what the attacker did.
 Tool: Atomic Red Team
 Command executed on Windows Server target:
 
-Invoke-AtomicTest T1070.003 -TestNumbers 1
+Invoke-AtomicTest T1070.003 -TestNumbers 12
 
 ## What Splunk Captured
 
@@ -35,4 +35,6 @@ Alert fired within seconds of the command running on the target.
 
 ## Screenshot
 
-[Splunk alert screenshot — to be added]
+<img width="947" height="140" alt="T1070 003-windows png" src="https://github.com/user-attachments/assets/43b9c821-bc44-49a0-bbb3-85e59ca1da1a" />
+<img width="1917" height="1025" alt="T1070 003-splunk png" src="https://github.com/user-attachments/assets/0fa3e6ab-b030-4026-a4c5-bcca44a20d9d" />
+
