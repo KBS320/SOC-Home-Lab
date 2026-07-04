@@ -12,7 +12,7 @@ network exposure and points to other systems the attacker can pivot to.
 ## How I Simulated It
 
 Tool: Atomic Red Team
-Command executed on the Windows Server target (192.168.56.102):
+Command executed on the Windows 11 target (192.168.56.102):
 
     Invoke-AtomicTest T1049 -TestNumbers 1
 
@@ -69,8 +69,8 @@ single automated sweep.
 
 ## Screenshots
 
-**Attack executed on Windows Server target:**
-<img width="1002" alt="T1049 netstat discovery test executed on Windows Server" src="https://github.com/user-attachments/assets/49e5ac74-b291-4752-9531-1e08b3f0aea4" />
+**Attack executed on Windows 11 target:**
+<img width="1002" alt="T1049 netstat discovery test executed on Windows 11" src="https://github.com/user-attachments/assets/49e5ac74-b291-4752-9531-1e08b3f0aea4" />
 
 **Detection in Splunk — 4 events from one cmd.exe parent:**
 <img width="1910" alt="T1049 detection in Splunk showing netstat, net use, net sessions" src="https://github.com/user-attachments/assets/12613e85-d138-4e81-8f8e-f7c7027daa82" />
