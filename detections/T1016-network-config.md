@@ -28,12 +28,14 @@ Sysmon Event ID 1 (Process Creation) fired showing:
 ## SPL Detection Query
 
 ```spl
-index=* source="WinEventLog:Microsoft-Windows-Sysmon/Operational"
-EventCode=1 Image="*\\ipconfig.exe"
-| table _time, ComputerName, User, CommandLine, ParentImage
-| sort -_time
+index=* sourcetype="XmlWinEventLog:Microsoft-Windows-Sysmon/Operational" "ipconfig"
+| rex field=_raw "Name='Image'>(?P<Image>[^<]+)"
+| rex field=_raw "Name='CommandLine'>(?P<CommandLine>[^<]+)"
+| rex field=_raw "Name='ParentImage'>(?P<ParentImage>[^<]+)"
+| rex field=_raw "Name='User'>(?P<User>[^<]+)"
+| rex field=_raw "Name='UtcTime'>(?P<UtcTime>[^<]+)"
+| table UtcTime, User, Image, CommandLine, ParentImage
 ```
-
 ## Detection Logic
 
 Any execution of `ipconfig.exe` is the signature. It's a native Windows tool
