@@ -13,7 +13,7 @@ evade it before continuing.
 ## How I Simulated It
 
 Tool: Atomic Red Team
-Command executed on the Windows Server target (192.168.56.102):
+Command executed on the Windows 11 target (192.168.56.102):
 
     Invoke-AtomicTest T1057 -TestNumbers 2
 
@@ -67,8 +67,8 @@ the attacker enumerated all running processes on the target.
 
 ## Screenshots
 
-**Attack executed on Windows Server target (tasklist process enumeration):**
-<img width="997" alt="T1057 tasklist executed on Windows Server" src="https://github.com/user-attachments/assets/f0bf328a-8141-4a8c-a29b-64e7b979d1ac" />
+**Attack executed on Windows 11 target (tasklist process enumeration):**
+<img width="997" alt="T1057 tasklist executed on Windows 11" src="https://github.com/user-attachments/assets/f0bf328a-8141-4a8c-a29b-64e7b979d1ac" />
 
 **Detection in Splunk — 5 events from the tasklist run:**
 <img width="1912" alt="T1057 detection in Splunk showing tasklist process discovery" src="https://github.com/user-attachments/assets/ccbb24a4-85df-4228-962a-51602d2672ba" />
