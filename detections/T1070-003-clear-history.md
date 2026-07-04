@@ -13,7 +13,7 @@ responders to reconstruct the attacker's actions.
 ## How I Simulated It
 
 Tool: Atomic Red Team
-Command executed on the Windows Server target (192.168.56.102):
+Command executed on the Windows 11 target (192.168.56.102):
 
     Invoke-AtomicTest T1070.003 -TestNumbers 12
 
@@ -71,8 +71,8 @@ point to investigate what the attacker was covering up.
 
 ## Screenshots
 
-**Attack executed on Windows Server target (delete PowerShell history file):**
-<img width="947" alt="T1070.003 clear PowerShell history on Windows Server" src="https://github.com/user-attachments/assets/43b9c821-bc44-49a0-bbb3-85e59ca1da1a" />
+**Attack executed on Windows 11 target (delete PowerShell history file):**
+<img width="947" alt="T1070.003 clear PowerShell history on Windows 11" src="https://github.com/user-attachments/assets/43b9c821-bc44-49a0-bbb3-85e59ca1da1a" />
 
 **Detection in Splunk — history-file deletion captured in one event:**
 <img width="1917" alt="T1070.003 detection in Splunk showing history file deletion" src="https://github.com/user-attachments/assets/0fa3e6ab-b030-4026-a4c5-bcca44a20d9d" />
