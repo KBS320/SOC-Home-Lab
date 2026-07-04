@@ -1,42 +1,42 @@
 # T1120 — Peripheral Device Discovery
 
+**Tactic:** Discovery  **Technique:** T1120  **Log Source:** Sysmon (XmlWinEventLog) — Process Creation
+
 ## What This Attack Does
 
-An attacker enumerates hardware and peripheral devices connected to
-a compromised system — USB drives, network adapters, printers, and
-other plug-and-play devices. This can reveal removable storage
-devices that might hold sensitive data, identify security or
-monitoring hardware, or help the attacker understand the physical
-environment they've gained access to.
+The attacker enumerates hardware and peripheral devices connected to the machine
+— USB drives, network adapters, printers, and other plug-and-play devices. This
+reveals removable storage that might hold sensitive data or be used to exfiltrate
+it, identifies security/monitoring hardware, and helps the attacker understand the
+physical environment they've reached.
 
 ## How I Simulated It
 
 Tool: Atomic Red Team
-Command executed on Windows Server target:
+Command executed on the Windows 11 target (192.168.56.102):
 
-Invoke-AtomicTest T1120 -TestNumbers 1
+    Invoke-AtomicTest T1120 -TestNumbers 1
 
-This test queries the `Win32_PnPEntity` WMI class, which lists all
-plug-and-play hardware on the system (name, description, and
-manufacturer for each device), and writes the results to a
-collection file for exfiltration or review.
+Test #1 ("Win32_PnPEntity Hardware Inventory") queries the `Win32_PnPEntity` WMI
+class — which lists every plug-and-play device (name, description, manufacturer)
+— and writes the results to a collection file, then de-duplicates and rewrites it:
+`Get-WMIObject Win32_PnPEntity | Format-Table Name, Description, Manufacturer > $env:TEMP\T1120_collection.txt`
 
 ## What Splunk Captured
 
-Sysmon Event ID 1 (Process Creation) fired showing the full
-PowerShell script:
+Sysmon Event ID 1 (Process Creation) fired once, capturing the full PowerShell
+script:
 - Image: `C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe`
 - User: `WINDOWS\khaled`
 - ParentImage: `C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe`
-- CommandLine:
-  `Get-WMIObject Win32_PnPEntity | Format-Table Name, Description, Manufacturer > $env:TEMP\T1120_collection.txt`
-  `$Space,$Heading,$Break,$Data = Get-Content $env:TEMP\T1120_collection.txt`
-  `@($Heading; $Break; $Data | Sort-Object -Unique) | ? {$_.trim() -ne "" } | Set-Content $env:TEMP\T1120_collection.txt`
+- CommandLine (key portions):
+  `Get-WMIObject Win32_PnPEntity | Format-Table Name, Description, Manufacturer > $env:TEMP\T1120_collection.txt`,
+  then reads the file back and rewrites a de-duplicated, sorted version to
+  `$env:TEMP\T1120_collection.txt`
 
-Note: Since this command runs inside the existing PowerShell session
-rather than spawning a new process, both Image and ParentImage show
-`powershell.exe` — this is expected behavior for in-session PowerShell
-commands, not a detection gap.
+Note: because this ran inside the existing PowerShell session rather than spawning
+a new child process, both Image and ParentImage show `powershell.exe` — expected
+behavior for in-session commands, not a detection gap.
 
 ## SPL Detection Query
 
@@ -50,13 +50,37 @@ index=* sourcetype="XmlWinEventLog:Microsoft-Windows-Sysmon/Operational" "Win32_
 | table UtcTime, User, Image, CommandLine, ParentImage
 ```
 
+## Detection Logic
+
+The query keys on `Win32_PnPEntity`, the WMI class used to enumerate plug-and-play
+hardware. This is a fairly high-fidelity indicator: WMI hardware inventory via
+PowerShell has limited routine interactive use, and the class name is specific
+enough to avoid most false positives. The stronger signal is the full behavior in
+this one event — a WMI hardware query whose output is redirected to a file in
+`%temp%`. That's not just discovery; it's discovery being *staged*, which points
+toward collection and eventual exfiltration.
+
+## False Positives / Tuning
+
+Some inventory and asset-management tooling legitimately queries WMI hardware
+classes, so pair `Win32_PnPEntity` with context to reduce noise: output
+redirected to a temp/staging file, a non-interactive parent, or the same session
+running other discovery/collection commands. The broader detection covers related
+WMI recon classes too — `Win32_USBHub`, `Win32_DiskDrive`, `Win32_LogicalDisk`,
+`Win32_NetworkAdapter` — which attackers use for the same hardware-profiling goal.
+
 ## Result
 
-Splunk successfully detected the peripheral device discovery attempt,
-capturing the full WMI query and the file-writing logic used to
-collect and stage hardware inventory data.
+Splunk detected the peripheral-device discovery in a single process-creation
+event, capturing the full WMI query and the file-writing logic used to collect
+and stage the hardware inventory. The log shows both the enumeration and the
+`%temp%` staging file, tying this Discovery action forward toward collection and
+exfiltration.
 
-## Screenshot
+## Screenshots
 
-<img width="867" height="147" alt="T1120-windows" src="https://github.com/user-attachments/assets/c949a8bb-1864-4257-a2b5-98f1f1a09093" />
-<img width="1915" height="1027" alt="T1120-splunk" src="https://github.com/user-attachments/assets/47c0b4e9-3478-4dc8-9136-84eedc9d89d5" />
+**Attack executed on Windows 11 target (WMI hardware inventory):**
+<img width="867" alt="T1120 peripheral device discovery on Windows 11" src="https://github.com/user-attachments/assets/c949a8bb-1864-4257-a2b5-98f1f1a09093" />
+
+**Detection in Splunk — Win32_PnPEntity query staged to temp file:**
+<img width="1915" alt="T1120 detection in Splunk showing Win32_PnPEntity hardware inventory" src="https://github.com/user-attachments/assets/47c0b4e9-3478-4dc8-9136-84eedc9d89d5" />
