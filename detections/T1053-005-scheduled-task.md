@@ -13,7 +13,7 @@ of the most common persistence techniques in real intrusions, and running a task
 ## How I Simulated It
 
 Tool: Atomic Red Team
-Command executed on the Windows Server target (192.168.56.102):
+Command executed on the Windows 11 target (192.168.56.102):
 
     Invoke-AtomicTest T1053.005 -TestNumbers 1
 
@@ -74,8 +74,8 @@ identify and remove the persistence.
 
 ## Screenshots
 
-**Attack executed on Windows Server target (both tasks created successfully):**
-<img width="1002" alt="T1053.005 scheduled task creation on Windows Server" src="https://github.com/user-attachments/assets/c0df8d11-4a3d-4e7e-9482-4ef71831c4ff" />
+**Attack executed on Windows 11 target (both tasks created successfully):**
+<img width="1002" alt="T1053.005 scheduled task creation on Windows 11" src="https://github.com/user-attachments/assets/c0df8d11-4a3d-4e7e-9482-4ef71831c4ff" />
 
 **Detection in Splunk — 3 events, two schtasks /create operations:**
 <img width="1915" alt="T1053.005 detection in Splunk showing two scheduled tasks created" src="https://github.com/user-attachments/assets/43fe3dd0-6a1b-42c3-aabf-b46c59e463c7" />
