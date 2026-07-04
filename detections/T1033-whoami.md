@@ -13,13 +13,13 @@ tools (`wmic useraccount`, `quser`, `qwinsta`) to map who else is logged on.
 ## How I Simulated It
 
 Tool: Atomic Red Team
-Command executed on the Windows Server target (192.168.56.102):
+Command executed on the Windows 11 target (192.168.56.102):
 
     Invoke-AtomicTest T1033 -TestNumbers 1
 
 The test runs `whoami` first, then chains several other user-discovery commands
 through `cmd.exe`: `wmic useraccount get /ALL`, `quser`, and `qwinsta`. On this
-Windows Server build, `wmic`, `quser`, and `qwinsta` were not installed, so those
+Windows 11 build, `wmic`, `quser`, and `qwinsta` were not installed, so those
 sub-commands returned "not recognized" and the test exited with code 1 — but the
 `whoami` portion ran successfully and every attempted command was still logged.
 
@@ -73,8 +73,8 @@ demonstrating that failed attacker actions are still fully visible in logs.
 
 ## Screenshots
 
-**Attack executed on Windows Server target (whoami runs; wmic/quser/qwinsta not present):**
-<img width="982" alt="T1033 whoami test executed on Windows Server" src="https://github.com/user-attachments/assets/205f9119-a52d-4f60-a2ed-e1eda45d745c" />
+**Attack executed on Windows 11 target (whoami runs; wmic/quser/qwinsta not present):**
+<img width="982" alt="T1033 whoami test executed on Windows 11" src="https://github.com/user-attachments/assets/205f9119-a52d-4f60-a2ed-e1eda45d745c" />
 
 **Detection in Splunk — 6 events from the whoami discovery chain:**
 <img width="1913" alt="T1033 detection in Splunk showing whoami discovery chain" src="https://github.com/user-attachments/assets/0b0f602a-55d9-43f0-ac01-9a0bc6efe168" />
