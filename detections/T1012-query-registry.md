@@ -12,7 +12,7 @@ config data, and sometimes even passwords, in plain text.
 ## How I Simulated It
 
 Tool: Atomic Red Team
-Command executed on the Windows Server target (192.168.56.102):
+Command executed on the Windows 11 target (192.168.56.102):
 
     Invoke-AtomicTest T1012 -TestNumbers 1
 
@@ -62,8 +62,8 @@ attacker targeted — useful for scoping what information may have been accessed
 
 ## Screenshots
 
-**Attack executed on Windows Server target:**
-<img width="1002" alt="T1012 reg query executed on Windows Server" src="https://github.com/user-attachments/assets/1a38d257-d11e-4e30-bed1-455e93bc1b71" />
+**Attack executed on Windows 11 target:**
+<img width="1002" alt="T1012 reg query executed on Windows 11" src="https://github.com/user-attachments/assets/1a38d257-d11e-4e30-bed1-455e93bc1b71" />
 
 **Splunk detection — 22 events returned (part 1 of 2):**
 <img width="1907" alt="T1012 Splunk detection results part 1" src="https://github.com/user-attachments/assets/55e4deb1-b91f-423a-bb88-ab0b122f88b3" />
