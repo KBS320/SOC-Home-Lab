@@ -13,7 +13,7 @@ responders to reconstruct what happened on the machine.
 Tool: Atomic Red Team
 Command executed on Windows Server target:
 
-Invoke-AtomicTest T1070.004 -TestNumbers 1
+Invoke-AtomicTest T1070.004 -TestNumbers 4
 
 ## What Splunk Captured
 
@@ -35,4 +35,7 @@ Alert fired within seconds of the deletion on the target.
 
 ## Screenshot
 
-[Splunk alert screenshot — to be added]
+<img width="953" height="295" alt="T1070 004-windows png" src="https://github.com/user-attachments/assets/c566ce55-20ee-4bed-a9d5-62005ba7252f" />
+<img width="1913" height="1023" alt="T1070 004-splunk png" src="https://github.com/user-attachments/assets/126cb50a-3716-4a26-a5e3-a66d49d28802" />
+
+
