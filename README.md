@@ -1,17 +1,18 @@
 # SOC Detection Lab — 30 MITRE ATT&CK Techniques
 
 A hands-on home lab where I built a full attack-and-detect pipeline from scratch.
-Every technique was simulated using Atomic Red Team and detected in Splunk.
-No guided walkthroughs. No pre-built alerts. Built and broken and fixed by hand.
+Every technique was executed with Atomic Red Team on a Windows host and detected
+in Splunk using custom SPL. No guided walkthroughs. No pre-built alerts. Built,
+broken, and fixed by hand.
 
 ---
 
 ## Why I Built This
 
-I have spent 8 years working with security tools at financial institutions —
-Splunk, CrowdStrike, Cortex XSOAR, Prisma Cloud. I knew the tools.
-What I wanted to prove — to myself and to any future employer — was that
-I could think like an attacker and catch them in logs.
+I've spent 8 years working with security tools at financial institutions —
+Splunk, CrowdStrike, Cortex XSOAR, Prisma Cloud. I knew the tools. What I wanted
+to prove — to myself and to any future employer — was that I could think like an
+attacker and catch them in the logs.
 
 This lab is that proof.
 
@@ -21,13 +22,20 @@ This lab is that proof.
 
 | Machine | OS | IP | Role |
 |---|---|---|---|
-| SIEM / Attacker | Kali Linux | 192.168.56.101 | Runs Splunk, executes Atomic tests |
-| Target | Windows Server 2019 | 192.168.56.102 | Sysmon + Universal Forwarder |
+| SIEM | Kali Linux | 192.168.56.101 | Runs Splunk (ingestion, search, detection) |
+| Target | Windows 11 | 192.168.56.102 | Sysmon + Universal Forwarder; Atomic Red Team executed here |
 
-- Network: VirtualBox Host-Only (192.168.56.0/24)
-- Log pipeline: Sysmon → Universal Forwarder → Splunk on Kali
-- Attack framework: Atomic Red Team (PowerShell)
-- Sysmon config: SwiftOnSecurity
+- **Network:** VirtualBox Host-Only (192.168.56.0/24)
+- **Log pipeline:** Sysmon (SwiftOnSecurity config) → Universal Forwarder → Splunk on Kali
+- **Ingestion:** Logs land as raw `XmlWinEventLog` and are parsed at search time with `rex` field extractions
+- **Attack framework:** Atomic Red Team, executed via PowerShell on the Windows target
+- **Detection identity:** `WINDOWS\khaled`
+
+> Note on SPL style: because Sysmon events are ingested as raw XML rather than
+> pre-parsed fields, every detection query extracts Image, CommandLine,
+> ParentImage, User, and UtcTime with `rex` before tabling the results. This
+> mirrors a real-world scenario where the Splunk Add-on for Sysmon isn't
+> installed and the analyst has to parse the raw event themselves.
 
 ---
 
@@ -109,12 +117,20 @@ This lab is that proof.
 
 ## Detection Writeups
 
-Each technique has its own writeup in the `/detections` folder with:
+Each technique has its own writeup in the `/detections` folder, following a
+consistent structure:
 - What the attack does and why attackers use it
-- The exact Atomic Red Team command used
-- The raw Splunk event captured
-- The SPL query that detected it
-- A screenshot of the Splunk alert firing
+- The exact Atomic Red Team command executed
+- What Sysmon captured (Image, CommandLine, ParentImage, User)
+- The SPL detection query
+- **Detection Logic** — why the query works and what the real signal is
+- **False Positives / Tuning** — how I'd operationalize it without flooding the SOC
+- Screenshots of both the attack (Windows side) and the detection (Splunk side)
+
+Several tests behaved realistically rather than cleanly — payloads that failed to
+resolve, tools missing from the host, commands blocked by Defender. Those are
+documented honestly, because a failed or blocked action still leaves a forensic
+trail, and recognizing that trail is the job.
 
 → [Browse all detection writeups](https://github.com/KBS320/SOC-Home-Lab/tree/main/detections)
 
@@ -122,11 +138,25 @@ Each technique has its own writeup in the `/detections` folder with:
 
 ## Tools and Stack
 
-- **Splunk** — SIEM, log ingestion, search and alerting
+- **Splunk** — SIEM: log ingestion, search, and detection
 - **Sysmon** — Deep Windows event logging (SwiftOnSecurity config)
 - **Atomic Red Team** — Open-source attack simulation mapped to MITRE ATT&CK
-- **VirtualBox** — Virtualization
-- **PowerShell** — Attack execution on Windows target
+- **VirtualBox** — Virtualization / host-only lab network
+- **PowerShell** — Attack execution on the Windows target
+
+---
+
+## What I'd Do Differently in Production
+
+This is a single-host lab, so a few things are deliberately simplified:
+- `index=*` is used for portability; in production each source would go to a
+  dedicated, access-controlled index.
+- Most Discovery queries are intentionally high-recall / low-precision. The
+  writeups call out where a detection needs correlation (parent process, command
+  chaining, time windows) before it's alert-worthy.
+- There are no correlation searches or notable-event workflows here — the focus
+  is on building the detection logic first, which is the foundation those layers
+  sit on.
 
 ---
 
