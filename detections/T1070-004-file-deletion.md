@@ -13,7 +13,7 @@ taken.
 ## How I Simulated It
 
 Tool: Atomic Red Team
-Command executed on the Windows Server target (192.168.56.102):
+Command executed on the Windows 11 target (192.168.56.102):
 
     Invoke-AtomicTest T1070.004 -TestNumbers 4 -GetPrereqs
     Invoke-AtomicTest T1070.004 -TestNumbers 4
@@ -74,8 +74,8 @@ exactly which artifact the attacker was trying to erase.
 
 ## Screenshots
 
-**Attack executed on Windows Server target (stage file, then force-delete from temp):**
-<img width="953" alt="T1070.004 file deletion executed on Windows Server" src="https://github.com/user-attachments/assets/c566ce55-20ee-4bed-a9d5-62005ba7252f" />
+**Attack executed on Windows 11 target (stage file, then force-delete from temp):**
+<img width="953" alt="T1070.004 file deletion executed on Windows 11" src="https://github.com/user-attachments/assets/c566ce55-20ee-4bed-a9d5-62005ba7252f" />
 
 **Detection in Splunk — deletion command captured at process creation:**
 <img width="1913" alt="T1070.004 detection in Splunk showing del command" src="https://github.com/user-attachments/assets/126cb50a-3716-4a26-a5e3-a66d49d28802" />
