@@ -14,7 +14,7 @@ traffic rather than a distinct data transfer.
 ## How I Simulated It
 
 Tool: Atomic Red Team
-Command executed on the Windows Server target (192.168.56.102):
+Command executed on the Windows 11 target (192.168.56.102):
 
     Invoke-AtomicTest T1041 -TestNumbers 1
 
@@ -77,8 +77,8 @@ exfiltration leaves a clear forensic trail.
 
 ## Screenshots
 
-**Attack executed on Windows Server target (POST to example.com fails to resolve):**
-<img width="873" alt="T1041 exfiltration test executed on Windows Server" src="https://github.com/user-attachments/assets/7b6c2893-02db-47c7-9df4-89e89ac306fa" />
+**Attack executed on Windows 11 target (POST to example.com fails to resolve):**
+<img width="873" alt="T1041 exfiltration test executed on Windows 11" src="https://github.com/user-attachments/assets/7b6c2893-02db-47c7-9df4-89e89ac306fa" />
 
 **Detection in Splunk — Invoke-WebRequest POST captured in one event:**
 <img width="1912" alt="T1041 detection in Splunk showing Invoke-WebRequest POST" src="https://github.com/user-attachments/assets/e71d3aaa-7205-46d0-a0cb-147e9a1d7868" />
