@@ -36,4 +36,6 @@ Alert fired within seconds of the download completing on the target.
 
 ## Screenshot
 
-[Splunk alert screenshot — to be added]
+<img width="958" height="217" alt="T1105-windows png (2)" src="https://github.com/user-attachments/assets/ed3649d7-3690-427e-b251-a0ef4e3d2f82" />
+<img width="1912" height="1025" alt="T1105-splunk" src="https://github.com/user-attachments/assets/2cbd9efe-00ff-4091-932c-802d3b2b8ced" />
+
