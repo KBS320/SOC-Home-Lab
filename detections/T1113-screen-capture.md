@@ -14,7 +14,7 @@ open in a browser or a password manager unlocked on screen.
 Tool: Atomic Red Team
 Command executed on Windows Server target:
 
-Invoke-AtomicTest T1113 -TestNumbers 1
+Invoke-AtomicTest T1113 -TestNumbers 7
 
 ## What Splunk Captured
 
@@ -36,4 +36,6 @@ Alert fired within seconds of the command running on the target.
 
 ## Screenshot
 
-[Splunk alert screenshot — to be added]
+<img width="940" height="136" alt="T1113-windows png" src="https://github.com/user-attachments/assets/b552aa33-5519-44ba-a56b-98e87d305d0c" />
+<img width="1913" height="1025" alt="T1113-splunk png" src="https://github.com/user-attachments/assets/b9157166-2f79-44ee-97d3-404cf64a354e" />
+
