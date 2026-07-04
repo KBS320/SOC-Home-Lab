@@ -1,56 +1,41 @@
 # T1518.001 — Security Software Discovery
 
+**Tactic:** Discovery  **Technique:** T1518.001  **Log Source:** Sysmon (XmlWinEventLog) — Process Creation
+
 ## What This Attack Does
 
-Before deploying malware or attempting to evade detection, an
-attacker checks what security tools are already running on the
-system — antivirus, EDR, firewall status, and monitoring agents.
-This lets them tailor their approach: choosing techniques known to
-bypass specific security products, or aborting the attack on a
-heavily-monitored machine to avoid detection.
+Before deploying malware or attempting evasion, an attacker checks what security
+tooling is already running — antivirus, EDR, firewall status, and monitoring
+agents like Sysmon. This lets them tailor their approach: pick techniques known to
+bypass a specific product, disable what they can, or abort on a heavily-monitored
+host. Notably, this test explicitly hunts for **Sysmon itself** — the attacker
+looking for the very logging that's catching them.
 
 ## How I Simulated It
 
 Tool: Atomic Red Team
-Command executed on Windows Server target:
+Command executed on the Windows 11 target (192.168.56.102):
 
-Invoke-AtomicTest T1518.001 -TestNumbers 1
+    Invoke-AtomicTest T1518.001 -TestNumbers 1
 
-This test runs a chained discovery sweep covering multiple angles at
-once: firewall status and configuration (via `netsh advfirewall`),
-Windows Defender service status (via `sc query windefend`), a check
-for the Sysmon process itself, and a `tasklist` scan piped through
-`findstr` specifically searching for known AV/EDR product names
-("virus," "cb," "defender," "cylance," "mc").
+Test #1 runs a broad, chained defensive-recon sweep covering several angles at
+once:
+- **Firewall** — `netsh advfirewall show allprofiles`, `firewall dump`, `show currentprofile`, `firewall show rule name=all`, `firewall show state`, `firewall show config`
+- **Windows Defender** — `sc query windefend`
+- **Sysmon self-check** — `Get-Process ... Sysmon`, `Get-Service ... *sysm*`, `Get-CimInstance Win32_Service -Filter 'Description = ''System Monitor service'''`
+- **AV/EDR product hunt** — `tasklist | findstr /i` for `virus`, `cb` (Carbon Black), `defender`, `cylance`, `mc` (McAfee)
 
 ## What Splunk Captured
 
-Sysmon Event ID 1 (Process Creation) fired 24 times, capturing the
-full discovery chain. The first event shows the entire attack in one
-command line:
-- Image: `C:\Windows\System32\cmd.exe`
+Sysmon Event ID 1 (Process Creation) fired **24 times**, capturing the entire
+sweep:
 - User: `WINDOWS\khaled`
-- ParentImage: `C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe`
-- CommandLine (full chain):
-  `netsh.exe advfirewall show allprofiles`
-  `netsh.exe advfirewall firewall dump`
-  `netsh.exe advfirewall show currentprofile`
-  `netsh.exe advfirewall firewall show rule name=all`
-  `netsh.exe firewall show state`
-  `netsh.exe firewall show config`
-  `sc query windefend`
-  `powershell.exe /c "Get-Process | Where-Object { $_.ProcessName -eq 'Sysmon' }"`
-  `powershell.exe /c "Get-Service | where-object {$_.DisplayName -like '*sysm*'}"`
-  `powershell.exe /c "Get-CimInstance Win32_Service -Filter 'Description = ''System Monitor service'''"`
-  `tasklist.exe | findstr /i virus`
-  `tasklist.exe | findstr /i cb`
-  `tasklist.exe | findstr /i defender`
-  `tasklist.exe | findstr /i cylance`
-  `tasklist.exe | findstr /i mc`
-  `tasklist.exe | findstr /i "virus cb defender cylance mc"`
-
-The remaining 23 events show each `netsh.exe` call spawning as its
-own child process of `cmd.exe`.
+- Parent CommandLine (first event) contains the full chain — every `netsh`,
+  `sc query windefend`, the three PowerShell Sysmon checks, and each
+  `tasklist | findstr` AV lookup, all joined with `&` under one `cmd.exe`
+- The remaining events are the individual children: `netsh.exe`, `sc.exe`,
+  `powershell.exe`, `tasklist.exe`, and `findstr.exe`
+- Parent chain: `powershell.exe` → `cmd.exe` → each discovery tool
 
 ## SPL Detection Query
 
@@ -64,18 +49,48 @@ index=* sourcetype="XmlWinEventLog:Microsoft-Windows-Sysmon/Operational" "netsh"
 | table UtcTime, User, Image, CommandLine, ParentImage
 ```
 
+## Detection Logic
+
+This query keys on `netsh`, which surfaces the firewall-discovery portion. But the
+much stronger signal is the **shape of the whole event**: one `cmd.exe` parent
+firing 24 discovery children in seconds, including `findstr` explicitly searching
+process names for `cylance`, `defender`, `mc`, and `cb`. Searching running
+processes for named security-vendor strings has essentially no legitimate purpose
+— it's an attacker taking inventory of the defenses. The **Sysmon self-check**
+(`Get-Service *sysm*`, `Description = 'System Monitor service'`) is an especially
+high-value indicator: the attacker is probing for the exact monitoring that logged
+this event.
+
+## False Positives / Tuning
+
+Individual pieces (`netsh`, `sc query`, `tasklist`) are noisy alone. The
+high-fidelity detections here are the specific ones with no benign explanation:
+`findstr`/`Where-Object` filtering for AV/EDR vendor names (`cylance`, `carbon
+black`, `mcafee`, `defender`, `sentinelone`, `crowdstrike`), and process/service
+enumeration targeting `Sysmon`. Also alert on the **volume + burst** pattern —
+one parent spawning many discovery children in a short window is itself
+suspicious regardless of the individual commands. Tune out legitimate security
+software that self-references, and prioritize sweeps that immediately precede
+defense-evasion (T1112) or impact (T1486) activity.
+
 ## Result
 
-Splunk successfully detected the complete security software discovery
-sweep across 24 process creation events, capturing the full chain of
-firewall checks, Defender status queries, a Sysmon self-check, and a
-targeted `tasklist`/`findstr` scan for known AV/EDR product names —
-demonstrating full visibility into a multi-step defensive-evasion
-reconnaissance attempt.
+Splunk detected the complete security-software discovery sweep across 24
+process-creation events — firewall enumeration, Defender status, a Sysmon
+self-check, and a targeted `tasklist`/`findstr` hunt for AV/EDR product names. The
+logs give full visibility into a multi-step defensive-recon attempt, including the
+attacker's search for the very monitoring that recorded it.
 
-## Screenshot
+## Screenshots
 
-<img width="865" height="113" alt="T1518-windows png" src="https://github.com/user-attachments/assets/22abad50-e120-4b42-bdf5-35a418eb8ed3" />
-<img width="1915" height="1020" alt="T1518-splunk(1) png" src="https://github.com/user-attachments/assets/7c0896d3-86f7-4a20-a821-b68b1cc43848" />
-<img width="1911" height="1030" alt="T1518-splunk(2) png" src="https://github.com/user-attachments/assets/766a3a30-094a-4594-a478-7c9121b0e48a" />
-<img width="1907" height="1028" alt="T1518-splunk(3) png" src="https://github.com/user-attachments/assets/54ccef53-49a7-48ad-9023-7d5e13bcd81a" />
+**Attack executed on Windows 11 target (security software discovery sweep):**
+<img width="865" alt="T1518.001 security software discovery on Windows 11" src="https://github.com/user-attachments/assets/22abad50-e120-4b42-bdf5-35a418eb8ed3" />
+
+**Detection in Splunk — 24 events (part 1 of 3): firewall enumeration:**
+<img width="1915" alt="T1518.001 detection in Splunk part 1 firewall checks" src="https://github.com/user-attachments/assets/7c0896d3-86f7-4a20-a821-b68b1cc43848" />
+
+**Detection in Splunk — (part 2 of 3): Defender, Sysmon self-check, AV hunt:**
+<img width="1911" alt="T1518.001 detection in Splunk part 2 Defender and Sysmon checks" src="https://github.com/user-attachments/assets/766a3a30-094a-4594-a478-7c9121b0e48a" />
+
+**Detection in Splunk — (part 3 of 3): tasklist/findstr AV product name scan:**
+<img width="1907" alt="T1518.001 detection in Splunk part 3 tasklist findstr AV names" src="https://github.com/user-attachments/assets/54ccef53-49a7-48ad-9023-7d5e13bcd81a" />
