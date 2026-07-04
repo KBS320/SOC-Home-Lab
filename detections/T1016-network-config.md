@@ -1,13 +1,13 @@
 # T1016 — System Network Configuration Discovery (ipconfig)
 
-**Tactic:** Discovery  **Technique:** T1016  **Log Source:** Sysmon Event ID 1 (Process Creation)
+**Tactic:** Discovery  **Technique:** T1016  **Log Source:** Sysmon (XmlWinEventLog) — Process Creation
 
 ## What This Attack Does
 
-The attacker runs `ipconfig` to map out the network they landed on. This
-reveals the IP address, subnet, default gateway, and DNS servers. With this
-info they can understand the network layout and plan lateral movement to other
-machines on the same network.
+The attacker enumerates the network configuration of the machine they landed on
+— IP address, subnet, default gateway, DNS servers, interfaces, and NetBIOS
+info. With this they can understand the network layout and plan lateral movement
+to other machines on the same network.
 
 ## How I Simulated It
 
@@ -16,14 +16,20 @@ Command executed on the Windows Server target (192.168.56.102):
 
     Invoke-AtomicTest T1016 -TestNumbers 1
 
-This runs `ipconfig /all` to enumerate full network configuration.
+This test doesn't just run one command — it chains several network-discovery
+commands together through `cmd.exe`:
+`ipconfig /all`, `netsh interface show interface`, `arp -a`, `nbtstat -n`,
+and `net config`. Each spawns its own process, so a single test produces
+multiple Sysmon events.
 
 ## What Splunk Captured
 
-Sysmon Event ID 1 (Process Creation) fired showing:
-- Image: `C:\Windows\System32\ipconfig.exe`
-- User: `WINDOWS-SERVER\Administrator`
-- CommandLine: `ipconfig /all`
+Sysmon Event ID 1 (Process Creation) fired 5 times — once for the parent
+`cmd.exe` and once for each chained tool:
+- User: `WINDOWS\khaled`
+- Parent CommandLine: `cmd.exe /c ipconfig /all & netsh interface show interface & arp -a & nbtstat -n & net config`
+- Child processes: `ipconfig.exe`, `netsh.exe`, `nbtstat.exe`, `net.exe`
+- All spawned by `C:\Windows\System32\cmd.exe`
 
 ## SPL Detection Query
 
@@ -36,32 +42,35 @@ index=* sourcetype="XmlWinEventLog:Microsoft-Windows-Sysmon/Operational" "ipconf
 | rex field=_raw "Name='UtcTime'>(?P<UtcTime>[^<]+)"
 | table UtcTime, User, Image, CommandLine, ParentImage
 ```
+
 ## Detection Logic
 
-Any execution of `ipconfig.exe` is the signature. It's a native Windows tool
-used constantly by admins, so on its own this is low-fidelity — best used as
-an enrichment signal rather than a standalone alert. The `/all` flag is a mild
-escalator, since attackers favor it for the fuller output (DNS, MAC, DHCP).
+The query matches any Sysmon event containing the string `ipconfig`, then uses
+`rex` to pull Image, CommandLine, ParentImage, and User from the raw XML. It's a
+broad string match, so it's high-recall but low-precision. The stronger signal
+here isn't `ipconfig` alone — it's the **parent `cmd.exe` running five discovery
+commands back-to-back in under a second**, which is far more suspicious than any
+single command on its own.
 
 ## False Positives / Tuning
 
-`ipconfig` runs during normal troubleshooting, login scripts, and automated
-health checks, so it fires often on its own. To cut noise, correlate on: an
-unusual ParentImage (`powershell.exe` or `cmd.exe` spawned by a non-interactive
-process), or `ipconfig` chained with other discovery commands (whoami,
-systeminfo, net user, netstat) from the same parent in a short window. A lone
-`ipconfig` is rarely worth an alert; a burst of discovery commands is.
+`ipconfig` runs during normal troubleshooting, login scripts, and health checks,
+so on its own it's noisy. The high-fidelity version of this detection keys off
+the *pattern*: a single parent process (`cmd.exe` or `powershell.exe`) spawning
+multiple network-discovery children (`ipconfig`, `arp`, `nbtstat`, `netsh`,
+`net`) inside a short time window. One `ipconfig` is rarely worth an alert; five
+chained discovery commands from one parent is a classic recon burst.
 
 ## Result
 
-Splunk detected the `ipconfig /all` execution via process-creation logging,
-capturing the full command line and confirming the attacker enumerated network
-configuration on the target.
+Splunk detected the full discovery chain — 5 process-creation events from one
+`cmd.exe` parent — capturing every command line and confirming the attacker
+enumerated network configuration on the target in a single automated sweep.
 
 ## Screenshots
 
 **Attack executed on Windows Server target:**
-<img width="1003" alt="T1016 ipconfig executed on Windows Server" src="https://github.com/user-attachments/assets/e007f51b-54d2-4796-9961-f87ef26b4c30" />
+<img width="1003" alt="T1016 network discovery test executed on Windows Server" src="https://github.com/user-attachments/assets/e007f51b-54d2-4796-9961-f87ef26b4c30" />
 
-**Detection in Splunk:**
-<img width="1912" alt="T1016 detection in Splunk" src="https://github.com/user-attachments/assets/687ba8a9-c471-4f9b-a648-76cbdea9019d" />
+**Detection in Splunk — 5 events from one cmd.exe parent:**
+<img width="1912" alt="T1016 detection in Splunk showing 5 chained discovery commands" src="https://github.com/user-attachments/assets/687ba8a9-c471-4f9b-a648-76cbdea9019d" />
