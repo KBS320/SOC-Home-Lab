@@ -1,9 +1,35 @@
-# SOC Detection Lab — 30 MITRE ATT&CK Techniques
+# 🛡️ SOC Detection Lab — 30 MITRE ATT&CK Techniques
 
-A hands-on home lab where I built a full attack-and-detect pipeline from scratch.
-Every technique was executed with Atomic Red Team on a Windows host and detected
-in Splunk using custom SPL. No guided walkthroughs. No pre-built alerts. Built,
-broken, and fixed by hand.
+> A hands-on Blue Team home lab: I attacked a Windows 11 host with Atomic Red Team, then hunted every technique down in Splunk with custom SPL. No guided walkthroughs, no pre-built alerts — built, broken, and detected by hand.
+
+**Skills demonstrated:** Splunk · SPL · Sysmon · MITRE ATT&CK · Atomic Red Team · Detection Engineering · Windows Log Analysis · Threat Detection
+
+<img alt="Splunk detecting Akira ransomware simulation (T1486)" src="https://github.com/user-attachments/assets/80e13a50-5259-4b5b-9fe3-f0dc17627b51" width="900" />
+
+*Above: Splunk detecting a simulated Akira ransomware attack (T1486) — full attack captured in a single event, including the ransom note.*
+
+---
+
+## ⭐ Start Here — My Strongest Writeups
+
+New here? These three show the range best:
+
+- **[T1486 — Akira Ransomware (Impact)](detections/T1486-ransomware-encryption.md)** — full ransomware sim detected in one event; includes production-grade tuning (mass file-write thresholds, shadow-copy deletion).
+- **[T1518.001 — Security Software Discovery](detections/T1518-001-security-software.md)** — a 24-event defensive-recon sweep where the attacker hunts for Sysmon itself.
+- **[T1033 — Whoami Discovery Chain](detections/T1033-whoami.md)** — parent-process chaining and reading forensic value out of *failed* attacker commands.
+
+Every writeup follows the same structure: what the attack does · the exact command · what Sysmon captured · the SPL query · **Detection Logic** (why it works) · **False Positives / Tuning** (how to run it in production) · screenshots of both the attack and the detection.
+
+---
+
+## Why I Built This
+
+I've spent 8 years working with security tools at financial institutions —
+Splunk, CrowdStrike, Cortex XSOAR, Prisma Cloud. I knew the tools. What I wanted
+to prove — to myself and to any future employer — was that I could think like an
+attacker and catch them in the logs.
+
+This lab is that proof.
 
 ---
 
