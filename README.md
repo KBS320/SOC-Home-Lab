@@ -102,13 +102,13 @@ Host logs ───────────────────────�
 ### Screenshots
 
 **Security Events Dashboard — 245 alerts collected**
-![Dashboard](./wazuh-lab/Screenshot%202026-07-06%20204434.png)
+![Dashboard](./wazuh-lab/kibana-security-events-dashboard.png)
 
 **Live Suricata Alert Detail in Kibana**
-![Alert Detail](./wazuh-lab/Screenshot%202026-07-06%20204357.png)
+![Alert Detail](./wazuh-lab/kibana-suricata-alert-detail.png)
 
 **Security Alerts Table — GPL ATTACK_RESPONSE detected**
-![Alerts Table](./wazuh-lab/Screenshot%202026-07-06%20204315.png)
+![Alerts Table](./wazuh-lab/kibana-security-alerts-table.png)
 
 📁 [View full Wazuh lab →](./wazuh-lab/)
 
