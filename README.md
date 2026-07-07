@@ -41,6 +41,11 @@ The Splunk setup uses `sourcetype="XmlWinEventLog:Microsoft-Windows-Sysmon/Opera
 - ✅ Techniques run using `Invoke-AtomicTest` with specific test numbers
 - ✅ Verified detections using real Sysmon telemetry from a live Windows Server target
 
+### Screenshot
+
+**Splunk detecting T1016 — network discovery chain caught across 5 process creation events**
+![Splunk Detection](./detections/splunk-detection-example.png)
+
 ### MITRE ATT&CK Coverage
 
 | Phase | Techniques Covered |
