@@ -1,198 +1,133 @@
-# 🛡️ SOC Detection Lab — 30 MITRE ATT&CK Techniques
+# 🛡️ SOC Home Lab Portfolio — Khaled Saifullah
 
-> A hands-on Blue Team home lab: I attacked a Windows 11 host with Atomic Red Team, then hunted every technique down in Splunk with custom SPL. No guided walkthroughs, no pre-built alerts — built, broken, and detected by hand.
+![Security](https://img.shields.io/badge/Focus-SOC%20Analysis-blue)
+![MITRE](https://img.shields.io/badge/Framework-MITRE%20ATT%26CK-red)
+![Status](https://img.shields.io/badge/Status-Active-brightgreen)
+![Security+](https://img.shields.io/badge/CompTIA-Security%2B-orange)
 
-**Skills demonstrated:** Splunk · SPL · Sysmon · MITRE ATT&CK · Atomic Red Team · Detection Engineering · Windows Log Analysis · Threat Detection
-
-<img alt="Splunk detecting Akira ransomware simulation (T1486)" src="https://github.com/user-attachments/assets/80e13a50-5259-4b5b-9fe3-f0dc17627b51" width="900" />
-
-*Above: Splunk detecting a simulated Akira ransomware attack (T1486) — full attack captured in a single event, including the ransom note.*
-
----
-
-## ⭐ Start Here — My Strongest Writeups
-
-New here? These three show the range best:
-
-- **[T1486 — Akira Ransomware (Impact)](detections/T1486-ransomware-encryption.md)** — full ransomware sim detected in one event; includes production-grade tuning (mass file-write thresholds, shadow-copy deletion).
-- **[T1518.001 — Security Software Discovery](detections/T1518-001-security-software.md)** — a 24-event defensive-recon sweep where the attacker hunts for Sysmon itself.
-- **[T1033 — Whoami Discovery Chain](detections/T1033-whoami.md)** — parent-process chaining and reading forensic value out of *failed* attacker commands.
-
-Every writeup follows the same structure: what the attack does · the exact command · what Sysmon captured · the SPL query · **Detection Logic** (why it works) · **False Positives / Tuning** (how to run it in production) · screenshots of both the attack and the detection.
+> I have 8 years of hands-on IT and security experience and built this lab to bridge the gap between theory and the real skills SOC teams need. Every detection in this repo was built from a real attack simulation, not copied from documentation.
 
 ---
 
-## Why I Built This
+## 📋 Table of Contents
 
-I've spent 8 years working with security tools at financial institutions —
-Splunk, CrowdStrike, Cortex XSOAR, Prisma Cloud. I knew the tools. What I wanted
-to prove — to myself and to any future employer — was that I could think like an
-attacker and catch them in the logs.
-
-This lab is that proof.
+- [Lab 1 — Splunk + MITRE ATT&CK](#-lab-1--splunk-siem--mitre-attck-detection-lab)
+- [Lab 2 — Wazuh SOC Lab](#-lab-2--wazuh-soc-lab)
+- [Certifications](#-certifications)
+- [Connect](#-connect)
 
 ---
 
-## Why I Built This
+## 🔵 Lab 1 — Splunk SIEM + MITRE ATT&CK Detection Lab
 
-I've spent 8 years working with security tools at financial institutions —
-Splunk, CrowdStrike, Cortex XSOAR, Prisma Cloud. I knew the tools. What I wanted
-to prove — to myself and to any future employer — was that I could think like an
-attacker and catch them in the logs.
+| Component | Tool |
+|---|---|
+| SIEM | Splunk |
+| Endpoint Telemetry | Sysmon (XML config) |
+| Attack Simulation | Atomic Red Team |
+| Target Machine | Windows Server 2019 |
+| Attacker Machine | Kali Linux |
+| Virtualization | VirtualBox |
 
-This lab is that proof.
+### Overview
+A detection engineering lab where I simulated all 7 kill chain phases using Atomic Red Team against a live Windows Server 2019 target with Sysmon telemetry, then built SPL detection queries for each technique mapped to the MITRE ATT&CK framework.
+
+The Splunk setup uses `sourcetype="XmlWinEventLog:Microsoft-Windows-Sysmon/Operational"` with `index=*`, `EventCode=1`, and a `rex`-based query extracting `Image`, `CommandLine`, `ParentImage`, `User`, and `UtcTime` fields.
+
+### Key Achievements
+- ✅ 30 MITRE ATT&CK techniques simulated and detected
+- ✅ Custom SPL queries written for each detection
+- ✅ Full kill chain coverage: Reconnaissance → Impact
+- ✅ Techniques run using `Invoke-AtomicTest` with specific test numbers
+- ✅ Verified detections using real Sysmon telemetry from a live Windows Server target
+
+### MITRE ATT&CK Coverage
+
+| Phase | Techniques Covered |
+|---|---|
+| Reconnaissance | T1595, T1592, T1589 |
+| Initial Access | T1566, T1190 |
+| Execution | T1059, T1204 |
+| Persistence | T1547, T1053 |
+| Privilege Escalation | T1548, T1134 |
+| Defense Evasion | T1070, T1036 |
+| Impact | T1486, T1489 |
+
+📁 [View all 30 detection writeups →](./detections/)
 
 ---
 
-## Lab Environment
+## 🟢 Lab 2 — Wazuh SOC Lab
 
-| Machine | OS | IP | Role |
-|---|---|---|---|
-| SIEM | Kali Linux | 192.168.56.101 | Runs Splunk (ingestion, search, detection) |
-| Target | Windows 11 | 192.168.56.102 | Sysmon + Universal Forwarder; Atomic Red Team executed here |
+> Single-Host Comprehensive Monitoring Architecture (SIEM / NIDS / HIDS)
 
-- **Network:** VirtualBox Host-Only (192.168.56.0/24)
-- **Log pipeline:** Sysmon (SwiftOnSecurity config) → Universal Forwarder → Splunk on Kali
-- **Ingestion:** Logs land as raw `XmlWinEventLog` and are parsed at search time with `rex` field extractions
-- **Attack framework:** Atomic Red Team, executed via PowerShell on the Windows target
-- **Detection identity:** `WINDOWS\khaled`
-
-> Note on SPL style: because Sysmon events are ingested as raw XML rather than
-> pre-parsed fields, every detection query extracts Image, CommandLine,
-> ParentImage, User, and UtcTime with `rex` before tabling the results. This
-> mirrors a real-world scenario where the Splunk Add-on for Sysmon isn't
-> installed and the analyst has to parse the raw event themselves.
-
----
-
-## The 30 Techniques — Full Kill Chain
-
-*Techniques are grouped below into a narrative kill-chain for readability. A few techniques' official MITRE tactic differs from the phase they appear in here (e.g. T1105 Ingress Tool Transfer is formally **Command and Control**); each writeup's header lists the accurate MITRE tactic.*
-
-### Phase 1 — Discovery: Learn the Environment (Attacks 1–10)
-*The attacker just got in. First move: figure out where they are.*
-
-| # | What I Simulated | MITRE ID |
+| Component | Version | Role |
 |---|---|---|
-| 1 | Whoami — who am I logged in as? | T1033 |
-| 2 | Systeminfo — what machine is this? | T1082 |
-| 3 | Tasklist — what processes are running? | T1057 |
-| 4 | Ipconfig — what network am I on? | T1016 |
-| 5 | Netstat — who is this machine talking to? | T1049 |
-| 6 | Net user — what accounts exist? | T1087.001 |
-| 7 | Net localgroup — who has admin rights? | T1069.001 |
-| 8 | Net share — what shared folders exist? | T1135 |
-| 9 | Get-ChildItem — what files are on this machine? | T1083 |
-| 10 | Reg query — what is hiding in the registry? | T1012 |
+| Wazuh Manager | 4.5.4 | HIDS — host intrusion detection & rule engine |
+| Elasticsearch | 7.17.13 | Data store and search index |
+| Kibana | 7.17.13 | Analyst dashboard |
+| Filebeat | 7.17.13 | Log shipper |
+| Suricata | 6.0.4 | NIDS — 51,851 ET Open signatures |
+| Ubuntu | 22.04 LTS Desktop | Host OS |
+| Virtualization | VirtualBox | 10GB RAM · 60GB disk |
 
-### Phase 2 — Execution: Run Malicious Code (Attacks 11–12)
-*Time to run something that shouldn't be running.*
+### Overview
+A single-host SOC deployment built entirely from scratch on Ubuntu 22.04 running in VirtualBox. Full TLS-encrypted pipeline from network-level detection through to the Kibana analyst dashboard — verified end-to-end with live attack simulation.
 
-| # | What I Simulated | MITRE ID |
+### Data Flow
+```
+Network traffic ──► Suricata (eve.json) ──┐
+                                          ├──► Wazuh Manager ──► Filebeat ──► Elasticsearch ──► Kibana
+Host logs ────────────────────────────────┘
+```
+
+### Network Layout
+
+| Machine | IP | Role |
 |---|---|---|
-| 11 | PowerShell encoded commands | T1059.001 |
-| 12 | CMD and batch file execution | T1059.003 |
+| Ubuntu SOC Box | 192.168.56.103 | Wazuh + Elastic + Suricata |
+| Kali Linux | 192.168.56.101 | Attacker |
+| Windows Server | 192.168.56.102 | Target endpoint |
 
-### Phase 3 — Persistence: Stay on the Machine (Attacks 13–15)
-*If the machine reboots, the attacker comes back automatically.*
+### Key Achievements
+- ✅ Deployed complete SIEM/NIDS/HIDS pipeline from zero
+- ✅ TLS certificates generated manually using elasticsearch-certutil
+- ✅ Elasticsearch JVM heap capped at 2GB for 8GB RAM environment
+- ✅ 51,851 Suricata ET Open signatures loaded and active
+- ✅ Suricata wired into Wazuh via `localfile` block in ossec.conf
+- ✅ Live detection verified — GPL ATTACK_RESPONSE rule 86601 fired and appeared in Kibana within seconds
+- ✅ All package versions frozen with `apt-mark hold` to prevent breaking changes
+- ✅ Troubleshot real issues — Wazuh 4.14.6 → 4.5.4 downgrade, ossec.conf cleanup, rbac.db reset, Suricata rules path fix
 
-| # | What I Simulated | MITRE ID |
-|---|---|---|
-| 13 | Scheduled task created at startup | T1053.005 |
-| 14 | Registry run key added for persistence | T1547.001 |
-| 15 | Ingress tool transfer via certutil download | T1105 |
+### Screenshots
 
-### Phase 4 — Defense Evasion: Hide from Security Tools (Attacks 16–19)
-*Cover the tracks. Make it look like nothing happened.*
+**Security Events Dashboard — 245 alerts collected**
+![Dashboard](./wazuh-lab/Screenshot%202026-07-06%20204434.png)
 
-| # | What I Simulated | MITRE ID |
-|---|---|---|
-| 16 | Rundll32 used to run malicious code | T1218.011 |
-| 17 | Evidence deleted from disk | T1070.004 |
-| 18 | Command history cleared | T1070.003 |
-| 19 | Registry modified to disable security | T1112 |
+**Live Suricata Alert Detail in Kibana**
+![Alert Detail](./wazuh-lab/Screenshot%202026-07-06%20204357.png)
 
-### Phase 5 — Discovery 2: Deeper Reconnaissance (Attacks 20–22)
-*The attacker now goes deeper — looking for timing, visuals, clipboard data.*
+**Security Alerts Table — GPL ATTACK_RESPONSE detected**
+![Alerts Table](./wazuh-lab/Screenshot%202026-07-06%20204315.png)
 
-| # | What I Simulated | MITRE ID |
-|---|---|---|
-| 20 | System time queried | T1124 |
-| 21 | Screenshot taken of active desktop | T1113 |
-| 22 | Clipboard contents stolen | T1115 |
-
-### Phase 6 — Collection: Package the Data (Attacks 23–24)
-*Gather everything worth stealing and prepare it for exfiltration.*
-
-| # | What I Simulated | MITRE ID |
-|---|---|---|
-| 23 | Files archived with makecab (SAM hive staged) | T1560.001 |
-| 24 | Data exfiltrated over C2 channel | T1041 |
-
-### Phase 7 — Impact: Damage and Destroy (Attacks 25–30)
-*The final stage. Ransomware, cleanup, and exit.*
-
-| # | What I Simulated | MITRE ID |
-|---|---|---|
-| 25 | Files encrypted — ransomware simulation | T1486 |
-| 26 | Password policy dumped | T1201 |
-| 27 | Security software identified | T1518.001 |
-| 28 | USB and peripheral devices enumerated | T1120 |
-| 29 | BITS job used for silent background download | T1197 |
-| 30 | System shutdown to destroy evidence | T1529 |
+📁 [View full Wazuh lab →](./wazuh-lab/)
 
 ---
 
-## Detection Writeups
+## 🎓 Certifications
 
-Each technique has its own writeup in the `/detections` folder, following a
-consistent structure:
-- What the attack does and why attackers use it
-- The exact Atomic Red Team command executed
-- What Sysmon captured (Image, CommandLine, ParentImage, User)
-- The SPL detection query
-- **Detection Logic** — why the query works and what the real signal is
-- **False Positives / Tuning** — how I'd operationalize it without flooding the SOC
-- Screenshots of both the attack (Windows side) and the detection (Splunk side)
-
-Several tests behaved realistically rather than cleanly — payloads that failed to
-resolve, tools missing from the host, commands blocked by Defender. Those are
-documented honestly, because a failed or blocked action still leaves a forensic
-trail, and recognizing that trail is the job.
-
-→ [Browse all detection writeups](https://github.com/KBS320/SOC-Home-Lab/tree/main/detections)
+| Certification | Issuer | Status |
+|---|---|---|
+| Security+ | CompTIA | ✅ Completed |
+| CySA+ | CompTIA | 🔄 In Progress |
 
 ---
 
-## Tools and Stack
+## 🤝 Connect
 
-- **Splunk** — SIEM: log ingestion, search, and detection
-- **Sysmon** — Deep Windows event logging (SwiftOnSecurity config)
-- **Atomic Red Team** — Open-source attack simulation mapped to MITRE ATT&CK
-- **VirtualBox** — Virtualization / host-only lab network
-- **PowerShell** — Attack execution on the Windows target
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Khaled%20Saifullah-0077B5?logo=linkedin)](https://www.linkedin.com/in/YOUR-LINKEDIN-URL-HERE)
+[![YouTube](https://img.shields.io/badge/YouTube-KhaledSec-FF0000?logo=youtube)](https://youtube.com/@KhaledSec)
 
 ---
 
-## What I'd Do Differently in Production
-
-This is a single-host lab, so a few things are deliberately simplified:
-- `index=*` is used for portability; in production each source would go to a
-  dedicated, access-controlled index.
-- Most Discovery queries are intentionally high-recall / low-precision. The
-  writeups call out where a detection needs correlation (parent process, command
-  chaining, time windows) before it's alert-worthy.
-- There are no correlation searches or notable-event workflows here — the focus
-  is on building the detection logic first, which is the foundation those layers
-  sit on.
-
----
-
-## Background
-
-8+ years working hands-on with security tools across financial institutions
-including TD Bank and Fiserv. Proficient in Splunk, CrowdStrike, Cortex XSOAR,
-and Prisma Cloud. Security+ certified.
-
-This lab was built to go beyond tool familiarity — to develop real detection
-instincts by thinking through each attack before writing a single SPL query.
+> ⚠️ All activities performed in an isolated lab environment. No production systems or unauthorized networks involved.
