@@ -125,7 +125,7 @@ Host logs ───────────────────────�
 
 ## 🤝 Connect
 
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-Khaled%20Saifullah-0077B5?logo=linkedin)](www.linkedin.com/in/khaledbs)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Khaled%20Saifullah-0077B5?logo=linkedin)](https://www.linkedin.com/in/khaledbs)
 
 ---
 
