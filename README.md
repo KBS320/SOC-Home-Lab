@@ -1,100 +1,148 @@
-# 🎯 MITRE ATT&CK Detection Writeups
+# SOC Detection Lab — 30 MITRE ATT&CK Techniques
 
-30 detection writeups built from real attack simulations using Atomic Red Team against a live Windows target with Sysmon telemetry, detected in Splunk with custom SPL queries.
-
----
-
-## 🔧 Lab Setup
-
-| Component        | Details                  |
-| ----------------- | ------------------------- |
-| SIEM              | Splunk                    |
-| Telemetry         | Sysmon (XmlWinEventLog)   |
-| Attack Framework  | Atomic Red Team           |
-| Target            | Windows 11 Home           |
-| Attacker          | Kali Linux                |
-
-**Base SPL query used across all detections:**
-
-```spl
-index=* sourcetype="XmlWinEventLog:Microsoft-Windows-Sysmon/Operational" EventCode=1
-| rex field=_raw "Image: (?<Image>[^\r\n]+)"
-| rex field=_raw "CommandLine: (?<CommandLine>[^\r\n]+)"
-| rex field=_raw "ParentImage: (?<ParentImage>[^\r\n]+)"
-| rex field=_raw "User: (?<User>[^\r\n]+)"
-| rex field=_raw "UtcTime: (?<UtcTime>[^\r\n]+)"
-| table UtcTime, User, Image, CommandLine, ParentImage
-```
+A hands-on home lab where I built a full attack-and-detect pipeline from scratch.
+Every technique was simulated using Atomic Red Team and detected in Splunk.
+No guided walkthroughs. No pre-built alerts. Built and broken and fixed by hand.
 
 ---
 
-## 📋 Writeup Format
+## Why I Built This
 
-Each writeup follows this structure:
+I have spent 8 years working with security tools at financial institutions —
+Splunk, CrowdStrike, Cortex XSOAR, Prisma Cloud. I knew the tools.
+What I wanted to prove — to myself and to any future employer — was that
+I could think like an attacker and catch them in logs.
 
-- **Technique** — MITRE ATT&CK technique name and ID
-- **Tactic** — Kill chain phase
-- **Atomic Test** — Exact test number used with `Invoke-AtomicTest`
-- **What it does** — Plain English explanation of the attack
-- **SPL Detection** — The Splunk query that catches it
-- **Screenshot** — Evidence of the detection firing
+This lab is that proof.
 
 ---
 
-## 📁 All 30 Detections
+## Lab Environment
 
-| #  | File                                                             | Technique                             | Tactic           |
-| --- | ------------------------------------------------------------------ | -------------------------------------- | ----------------- |
-| 1  | [T1012-query-registry.md](T1012-query-registry.md)                 | Query Registry                        | Discovery         |
-| 2  | [T1016-network-config.md](T1016-network-config.md)                 | System Network Configuration Discovery | Discovery         |
-| 3  | [T1033-whoami.md](T1033-whoami.md)                                 | System Owner/User Discovery           | Discovery         |
-| 4  | [T1041-exfiltration-c2.md](T1041-exfiltration-c2.md)               | Exfiltration Over C2 Channel          | Exfiltration      |
-| 5  | [T1049-network-connections.md](T1049-network-connections.md)       | System Network Connections Discovery  | Discovery         |
-| 6  | [T1053-005-scheduled-task.md](T1053-005-scheduled-task.md)         | Scheduled Task                        | Persistence       |
-| 7  | [T1057-process-discovery.md](T1057-process-discovery.md)           | Process Discovery                     | Discovery         |
-| 8  | [T1059-001-powershell.md](T1059-001-powershell.md)                 | PowerShell                            | Execution         |
-| 9  | [T1059-003-cmd-shell.md](T1059-003-cmd-shell.md)                   | Windows Command Shell                 | Execution         |
-| 10 | [T1069-local-group-discovery.md](T1069-local-group-discovery.md)   | Local Group Discovery                 | Discovery         |
-| 11 | [T1070-003-clear-history.md](T1070-003-clear-history.md)           | Clear Command History                 | Defense Evasion   |
-| 12 | [T1070-004-file-deletion.md](T1070-004-file-deletion.md)           | File Deletion                         | Defense Evasion   |
-| 13 | [T1082-system-info.md](T1082-system-info.md)                       | System Information Discovery          | Discovery         |
-| 14 | [T1083-file-directory-discovery.md](T1083-file-directory-discovery.md) | File and Directory Discovery      | Discovery         |
-| 15 | [T1087-local-account-discovery.md](T1087-local-account-discovery.md) | Local Account Discovery             | Discovery         |
-| 16 | [T1105-ingress-tool-transfer.md](T1105-ingress-tool-transfer.md)   | Ingress Tool Transfer                 | Command and Control |
-| 17 | [T1112-modify-registry.md](T1112-modify-registry.md)               | Modify Registry                       | Defense Evasion   |
-| 18 | [T1113-screen-capture.md](T1113-screen-capture.md)                 | Screen Capture                        | Collection        |
-| 19 | [T1115-clipboard-data.md](T1115-clipboard-data.md)                 | Clipboard Data                        | Collection        |
-| 20 | [T1120-peripheral-devices.md](T1120-peripheral-devices.md)         | Peripheral Device Discovery           | Discovery         |
-| 21 | [T1124-system-time-discovery.md](T1124-system-time-discovery.md)   | System Time Discovery                 | Discovery         |
-| 22 | [T1135-network-share-discovery.md](T1135-network-share-discovery.md) | Network Share Discovery             | Discovery         |
-| 23 | [T1197-bits-jobs.md](T1197-bits-jobs.md)                           | BITS Jobs                             | Persistence       |
-| 24 | [T1201-password-policy.md](T1201-password-policy.md)               | Password Policy Discovery             | Discovery         |
-| 25 | [T1218-011-rundll32.md](T1218-011-rundll32.md)                     | Rundll32                              | Defense Evasion   |
-| 26 | [T1486-ransomware-encryption.md](T1486-ransomware-encryption.md)   | Data Encrypted for Impact             | Impact            |
-| 27 | [T1518-001-security-software.md](T1518-001-security-software.md)   | Security Software Discovery           | Discovery         |
-| 28 | [T1529-system-shutdown.md](T1529-system-shutdown.md)               | System Shutdown/Reboot                | Impact            |
-| 29 | [T1547-001-registry-run-key.md](T1547-001-registry-run-key.md)     | Registry Run Keys                     | Persistence       |
-| 30 | [T1560-001-archive-data.md](T1560-001-archive-data.md)             | Archive Collected Data                | Collection        |
+| Machine         | OS                  | IP             | Role                               |
+| --------------- | ------------------- | -------------- | ----------------------------------- |
+| SIEM / Attacker | Kali Linux          | 192.168.56.101 | Runs Splunk, executes Atomic tests |
+| Target          | Windows 11 Home     | 192.168.56.102 | Sysmon + Universal Forwarder       |
+
+- Network: VirtualBox Host-Only (192.168.56.0/24)
+- Log pipeline: Sysmon → Universal Forwarder → Splunk on Kali
+- Attack framework: Atomic Red Team (PowerShell)
+- Sysmon config: SwiftOnSecurity
 
 ---
 
-## 🗺️ MITRE ATT&CK Coverage by Tactic
+## The 30 Techniques — Full Kill Chain
 
-| Tactic            | Count | Techniques |
-| ------------------ | ----- | ---------- |
-| Discovery          | 14    | T1012, T1016, T1033, T1049, T1057, T1069, T1082, T1083, T1087, T1120, T1124, T1135, T1201, T1518 |
-| Defense Evasion    | 4     | T1070.003, T1070.004, T1112, T1218.011 |
-| Execution          | 2     | T1059.001, T1059.003 |
-| Persistence        | 3     | T1053.005, T1197, T1547.001 |
-| Collection         | 3     | T1113, T1115, T1560.001 |
-| Exfiltration       | 1     | T1041 |
-| Impact             | 2     | T1486, T1529 |
-| Command and Control | 1    | T1105 |
+### Phase 1 — Discovery: Learn the Environment (Attacks 1–10)
 
-**Total: 30 techniques.** No Credential Access or Lateral Movement coverage yet — a natural next phase for this lab.
+*The attacker just got in. First move: figure out where they are.*
+
+| #  | What I Simulated                            | MITRE ID  | Writeup |
+| --- | ------------------------------------------- | --------- | ------- |
+| 1  | Whoami — who am I logged in as?             | T1033     | [View →](https://github.com/KBS320/SOC-Home-Lab/blob/main/detections/T1033-whoami.md) |
+| 2  | Systeminfo — what machine is this?          | T1082     | [View →](https://github.com/KBS320/SOC-Home-Lab/blob/main/detections/T1082-system-info.md) |
+| 3  | Tasklist — what processes are running?      | T1057     | [View →](https://github.com/KBS320/SOC-Home-Lab/blob/main/detections/T1057-process-discovery.md) |
+| 4  | Ipconfig — what network am I on?            | T1016     | [View →](https://github.com/KBS320/SOC-Home-Lab/blob/main/detections/T1016-network-config.md) |
+| 5  | Netstat — who is this machine talking to?   | T1049     | [View →](https://github.com/KBS320/SOC-Home-Lab/blob/main/detections/T1049-network-connections.md) |
+| 6  | Net user — what accounts exist?             | T1087.001 | [View →](https://github.com/KBS320/SOC-Home-Lab/blob/main/detections/T1087-local-account-discovery.md) |
+| 7  | Net localgroup — who has admin rights?      | T1069.001 | [View →](https://github.com/KBS320/SOC-Home-Lab/blob/main/detections/T1069-local-group-discovery.md) |
+| 8  | Net share — what shared folders exist?      | T1135     | [View →](https://github.com/KBS320/SOC-Home-Lab/blob/main/detections/T1135-network-share-discovery.md) |
+| 9  | Dir/tree — what files are on this machine?  | T1083     | [View →](https://github.com/KBS320/SOC-Home-Lab/blob/main/detections/T1083-file-directory-discovery.md) |
+| 10 | Reg query — what is hiding in the registry? | T1012     | [View →](https://github.com/KBS320/SOC-Home-Lab/blob/main/detections/T1012-query-registry.md) |
+
+### Phase 2 — Execution: Run Malicious Code (Attacks 11–12)
+
+*Time to run something that shouldn't be running.*
+
+| #  | What I Simulated             | MITRE ID  | Writeup |
+| --- | ---------------------------- | --------- | ------- |
+| 11 | PowerShell encoded commands  | T1059.001 | [View →](https://github.com/KBS320/SOC-Home-Lab/blob/main/detections/T1059-001-powershell.md) |
+| 12 | CMD and batch file execution | T1059.003 | [View →](https://github.com/KBS320/SOC-Home-Lab/blob/main/detections/T1059-003-cmd-shell.md) |
+
+### Phase 3 — Persistence: Stay on the Machine (Attacks 13–15)
+
+*If the machine reboots, the attacker comes back automatically.*
+
+| #  | What I Simulated                       | MITRE ID  | Writeup |
+| --- | -------------------------------------- | --------- | ------- |
+| 13 | Scheduled task created at startup      | T1053.005 | [View →](https://github.com/KBS320/SOC-Home-Lab/blob/main/detections/T1053-005-scheduled-task.md) |
+| 14 | Registry run key added for persistence | T1547.001 | [View →](https://github.com/KBS320/SOC-Home-Lab/blob/main/detections/T1547-001-registry-run-key.md) |
+| 15 | Remote tool downloaded to target       | T1105     | [View →](https://github.com/KBS320/SOC-Home-Lab/blob/main/detections/T1105-ingress-tool-transfer.md) |
+
+### Phase 4 — Defense Evasion: Hide from Security Tools (Attacks 16–19)
+
+*Cover the tracks. Make it look like nothing happened.*
+
+| #  | What I Simulated                      | MITRE ID  | Writeup |
+| --- | -------------------------------------- | --------- | ------- |
+| 16 | Rundll32 used to run malicious code   | T1218.011 | [View →](https://github.com/KBS320/SOC-Home-Lab/blob/main/detections/T1218-011-rundll32.md) |
+| 17 | Evidence deleted from disk            | T1070.004 | [View →](https://github.com/KBS320/SOC-Home-Lab/blob/main/detections/T1070-004-file-deletion.md) |
+| 18 | Command history cleared               | T1070.003 | [View →](https://github.com/KBS320/SOC-Home-Lab/blob/main/detections/T1070-003-clear-history.md) |
+| 19 | Registry modified to disable security | T1112     | [View →](https://github.com/KBS320/SOC-Home-Lab/blob/main/detections/T1112-modify-registry.md) |
+
+### Phase 5 — Discovery 2: Deeper Reconnaissance (Attacks 20–22)
+
+*The attacker now goes deeper — looking for timing, visuals, clipboard data.*
+
+| #  | What I Simulated                   | MITRE ID | Writeup |
+| --- | ---------------------------------- | -------- | ------- |
+| 20 | System time queried                | T1124    | [View →](https://github.com/KBS320/SOC-Home-Lab/blob/main/detections/T1124-system-time-discovery.md) |
+| 21 | Screenshot taken of active desktop | T1113    | [View →](https://github.com/KBS320/SOC-Home-Lab/blob/main/detections/T1113-screen-capture.md) |
+| 22 | Clipboard contents stolen          | T1115    | [View →](https://github.com/KBS320/SOC-Home-Lab/blob/main/detections/T1115-clipboard-data.md) |
+
+### Phase 6 — Collection: Package the Data (Attacks 23–24)
+
+*Gather everything worth stealing and prepare it for exfiltration.*
+
+| #  | What I Simulated                 | MITRE ID  | Writeup |
+| --- | --------------------------------- | --------- | ------- |
+| 23 | Files archived into a zip        | T1560.001 | [View →](https://github.com/KBS320/SOC-Home-Lab/blob/main/detections/T1560-001-archive-data.md) |
+| 24 | Data exfiltrated over C2 channel | T1041     | [View →](https://github.com/KBS320/SOC-Home-Lab/blob/main/detections/T1041-exfiltration-c2.md) |
+
+### Phase 7 — Impact: Damage and Destroy (Attacks 25–30)
+
+*The final stage. Ransomware, cleanup, and exit.*
+
+| #  | What I Simulated                             | MITRE ID  | Writeup |
+| --- | ---------------------------------------------- | --------- | ------- |
+| 25 | Files encrypted — ransomware simulation      | T1486     | [View →](https://github.com/KBS320/SOC-Home-Lab/blob/main/detections/T1486-ransomware-encryption.md) |
+| 26 | Password policy dumped                       | T1201     | [View →](https://github.com/KBS320/SOC-Home-Lab/blob/main/detections/T1201-password-policy.md) |
+| 27 | Security software identified                 | T1518.001 | [View →](https://github.com/KBS320/SOC-Home-Lab/blob/main/detections/T1518-001-security-software.md) |
+| 28 | USB and peripheral devices enumerated        | T1120     | [View →](https://github.com/KBS320/SOC-Home-Lab/blob/main/detections/T1120-peripheral-devices.md) |
+| 29 | BITS job used for silent background download | T1197     | [View →](https://github.com/KBS320/SOC-Home-Lab/blob/main/detections/T1197-bits-jobs.md) |
+| 30 | System shutdown to destroy evidence          | T1529     | [View →](https://github.com/KBS320/SOC-Home-Lab/blob/main/detections/T1529-system-shutdown.md) |
 
 ---
 
-## ⚠️ Disclaimer
+## Detection Writeups
 
-All simulations performed in an isolated lab environment. No production systems or unauthorized networks involved.
+Each technique has its own writeup in the `/detections` folder with:
+
+- What the attack does and why attackers use it
+- The exact Atomic Red Team command used
+- The raw Splunk event captured
+- The SPL query that detected it
+- A screenshot of the Splunk alert firing
+
+→ [Browse all detection writeups](https://github.com/KBS320/SOC-Home-Lab/blob/main/detections/README.md)
+
+---
+
+## Tools and Stack
+
+- **Splunk** — SIEM, log ingestion, search and alerting
+- **Sysmon** — Deep Windows event logging (SwiftOnSecurity config)
+- **Atomic Red Team** — Open-source attack simulation mapped to MITRE ATT&CK
+- **VirtualBox** — Virtualization
+- **PowerShell** — Attack execution on Windows target
+
+---
+
+## Background
+
+8+ years working hands-on with security tools across financial institutions
+including TD Bank and Fiserv. Proficient in Splunk, CrowdStrike, Cortex XSOAR,
+and Prisma Cloud. Security+ certified.
+
+This lab was built to go beyond tool familiarity — to develop real detection
+instincts by thinking through each attack before writing a single SPL query.
