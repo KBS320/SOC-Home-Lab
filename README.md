@@ -138,6 +138,23 @@ Each technique has its own writeup in the `/detections` folder with:
 
 ---
 
+---
+
+## Second Lab — Wazuh SOC Deployment (Network + Host)
+
+The lab above focuses on host-based detection in Splunk. I also built a second, independent detection stack to get hands-on with an open-source SIEM and network intrusion detection — the kind of stack a lot of SOCs run instead of Splunk.
+
+| Component    | Details                                                    |
+| ------------- | ----------------------------------------------------------- |
+| SIEM          | Wazuh Manager 4.5.4                                        |
+| Log pipeline  | Suricata → Wazuh → Filebeat → Elasticsearch → Kibana (full TLS) |
+| NIDS          | Suricata 6.0.4 (51,851 ET Open signatures)                  |
+| Host          | Ubuntu 22.04 on VirtualBox, 192.168.56.103                  |
+
+**Verified working:** full TLS pipeline confirmed end to end, live detection fired correctly (GPL ATTACK_RESPONSE id check returned root — Rule 86601), 245 security events collected, MITRE ATT&CK mapping enabled in the Kibana dashboard.
+
+→ [Full writeup and dashboard screenshots](https://github.com/KBS320/SOC-Home-Lab/blob/main/wazuh-lab/README.md)
+
 ## Background
 
 8+ years working hands-on with security tools across financial institutions
