@@ -159,7 +159,7 @@ The lab above focuses on host-based detection in Splunk. I also built a second, 
 
 8+ years working hands-on with security tools across financial institutions
 including TD Bank and Fiserv. Proficient in Splunk, CrowdStrike, Cortex XSOAR,
-and Prisma Cloud. Security+ certified.
+and Prisma Cloud. CompTIA CySA+ certified.
 
 This lab was built to go beyond tool familiarity — to develop real detection
 instincts by thinking through each attack before writing a single SPL query.
