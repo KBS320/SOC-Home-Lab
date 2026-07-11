@@ -18,11 +18,11 @@
 
 ```spl
 index=* sourcetype="XmlWinEventLog:Microsoft-Windows-Sysmon/Operational" EventCode=1
-| rex field=_raw "Image: (?<Image>[^\r\n]+)"
-| rex field=_raw "CommandLine: (?<CommandLine>[^\r\n]+)"
-| rex field=_raw "ParentImage: (?<ParentImage>[^\r\n]+)"
-| rex field=_raw "User: (?<User>[^\r\n]+)"
-| rex field=_raw "UtcTime: (?<UtcTime>[^\r\n]+)"
+| rex field=_raw "Name='Image'>(?P<Image>[^<]+)"
+| rex field=_raw "Name='CommandLine'>(?P<CommandLine>[^<]+)"
+| rex field=_raw "Name='ParentImage'>(?P<ParentImage>[^<]+)"
+| rex field=_raw "Name='User'>(?P<User>[^<]+)"
+| rex field=_raw "Name='UtcTime'>(?P<UtcTime>[^<]+)"
 | table UtcTime, User, Image, CommandLine, ParentImage
 ```
 
